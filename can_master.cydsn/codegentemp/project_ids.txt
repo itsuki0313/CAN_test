@@ -1,0 +1,10 @@
+C:\Users\KUT-PC\Documents\PSoC Creator\CAN_test\can_master.cydsn\can_master.cyprj|0ab296d3-8fee-4745-8ad3-cf50a4100bd9
+C:\Program Files (x86)\Cypress\PSoC Creator\4.2\PSoC Creator\psoc\content\default\CyAnnotationLibrary\CyAnnotationLibrary.cylib\CyAnnotationLibrary.cyprj|067def36-e885-4af0-90f7-8b03de5a89f1
+C:\Users\KUT-PC\Documents\PSoC Creator\4.2\Downloads ( 4.2).cylib\Downloads ( 4.2).cyprj|ac74d1b1-ca3e-4568-b039-67805d64a873
+C:\Users\KUT-PC\Documents\PSoC Creator\4.1\Downloads ( 4.1).cylib\Downloads ( 4.1).cyprj|cf25bbe5-b42c-4616-851c-7da2efdd0110
+C:\Program Files (x86)\Cypress\PSoC Creator\4.2\PSoC Creator\psoc\content\cycomponentlibraryupdates\CyComponentLibraryUpdates.cylib\CyComponentLibraryUpdates.cyprj|077a209a-d0aa-412b-bc50-a1095f41c188
+C:\Program Files (x86)\Cypress\PSoC Creator\4.2\PSoC Creator\psoc\content\cycomponentlibrary\CyComponentLibrary.cylib\CyComponentLibrary.cyprj|ddd15d1f-23a4-4cfe-b35d-96569abc8176
+C:\Program Files (x86)\Cypress\PSoC Creator\4.2\PSoC Creator\psoc\content\cyprimitives\CyPrimitives.cylib\CyPrimitives.cyprj|9699a39b-27bd-4ba1-be7f-592ddb5b3a22
+C:\Users\KUT-PC\Documents\PSoC Creator\CAN_test\can_slave.cydsn\can_slave.cyprj|f89fcc9d-c3d0-4229-bda3-4baffac6509d
+C:\Users\KUT-PC\Documents\PSoC Creator\CAN_test\CAN_Basic_Example01.cydsn\CAN_Basic_Example01.cyprj|121bd276-41f7-44a2-9c54-f6b5054ec844
+C:\Users\KUT-PC\Documents\PSoC Creator\CAN_test\CAN_Full_Example01.cydsn\CAN_Full_Example01.cyprj|b560b08d-7167-4387-b570-c6c267651671

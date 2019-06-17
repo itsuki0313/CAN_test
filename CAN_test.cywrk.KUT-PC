@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CyXmlSerializer>
+<!--This file is machine generated and read. It is not intended to be edited by hand.-->
+<!--Due to this, there is no schema for this file.-->
+<CyGuid_843a90a4-0c4b-4e44-991d-05e7fb117a21 type_name="CyDesigner.Common.ProjMgmt.Model.CyPrjMgmtWrkspcCustomData" version="4">
+<CyGuid_fdba8dfd-b15b-4469-9bbb-9e40c3e70997 type_name="CyDesigner.Common.Base.CyCustomData" version="2">
+<userData>
+<dataGuid v="1b906a0f-a7b6-4e4d-a428-82f98b53cb35">
+<CyGuid_1b906a0f-a7b6-4e4d-a428-82f98b53cb35 type_name="CyDesigner.Common.ProjMgmt.GUI.CyExplorerWindow+CyExplorerWindowState" version="3" SelectedTab="Source">
+<TreeKeys>
+<v>Source</v>
+<v>Components</v>
+<v>Output</v>
+</TreeKeys>
+<TreeStates>
+<CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237 type_name="CyDesigner.Common.Base.Controls.CyTreeViewState" version="1" SelectedNodeId="CAN_test\can_master_test\Generated_Source\PSoC5\CAN_1\CAN_1_TX_RX_func.c">
+<ExpandedNodeIds>
+<v>CAN_test</v>
+<v>CAN_test\CAN_Full_Example01\TopDesign</v>
+<v>CAN_test\CAN_Full_Example01\CAN_Full_Example01.cydwr</v>
+<v>CAN_test\CAN_Full_Example01\CAN_Full_Example01.cydwr\Pins</v>
+<v>CAN_test\CAN_Full_Example01\CAN_Full_Example01.cydwr\Analog</v>
+<v>CAN_test\CAN_Full_Example01\CAN_Full_Example01.cydwr\Clocks</v>
+<v>CAN_test\CAN_Full_Example01\CAN_Full_Example01.cydwr\Interrupts</v>
+<v>CAN_test\CAN_Full_Example01\CAN_Full_Example01.cydwr\DMA</v>
+<v>CAN_test\CAN_Full_Example01\CAN_Full_Example01.cydwr\System</v>
+<v>CAN_test\CAN_Full_Example01\CAN_Full_Example01.cydwr\Directives</v>
+<v>CAN_test\CAN_Full_Example01\CAN_Full_Example01.cydwr\Flash Security</v>
+<v>CAN_test\CAN_Full_Example01\CAN_Full_Example01.cydwr\EEPROM</v>
+<v>CAN_test\CAN_Full_Example01\CAN_Full_Example01.cyre</v>
+<v>CAN_test\CAN_Full_Example01\Header Files</v>
+<v>CAN_test\CAN_Full_Example01\Header Files\cyapicallbacks.h</v>
+<v>CAN_test\CAN_Full_Example01\Source Files</v>
+<v>CAN_test\CAN_Full_Example01\Source Files\main.c</v>
+<v>CAN_test\CAN_Full_Example01\CAN_Full_Example.pdf</v>
+<v>CAN_test\CAN_Full_Example01\Generated_Source\PSoC5</v>
+<v>CAN_test\CAN_Full_Example01\Generated_Source\PSoC5\CAN</v>
+<v>CAN_test\can_master</v>
+<v>CAN_test\can_master\TopDesign</v>
+<v>CAN_test\can_master\can_master.cydwr</v>
+<v>CAN_test\can_master\can_master.cydwr\Pins</v>
+<v>CAN_test\can_master\can_master.cydwr\Analog</v>
+<v>CAN_test\can_master\can_master.cydwr\Clocks</v>
+<v>CAN_test\can_master\can_master.cydwr\Interrupts</v>
+<v>CAN_test\can_master\can_master.cydwr\DMA</v>
+<v>CAN_test\can_master\can_master.cydwr\System</v>
+<v>CAN_test\can_master\can_master.cydwr\Directives</v>
+<v>CAN_test\can_master\can_master.cydwr\Flash Security</v>
+<v>CAN_test\can_master\can_master.cydwr\EEPROM</v>
+<v>CAN_test\can_master\Header Files</v>
+<v>CAN_test\can_master\Header Files\cyapicallbacks.h</v>
+<v>CAN_test\can_master\Source Files</v>
+<v>CAN_test\can_master\Source Files\main.c</v>
+<v>CAN_test\can_master\Generated_Source\PSoC5</v>
+<v>CAN_test\can_master\Generated_Source\PSoC5\CAN_1</v>
+<v>CAN_test\can_master\Generated_Source\PSoC5\UART_1_IntClock</v>
+<v>CAN_test\can_master_test</v>
+<v>CAN_test\can_master_test\TopDesign</v>
+<v>CAN_test\can_master_test\can_master_test.cydwr</v>
+<v>CAN_test\can_master_test\can_master_test.cydwr\Pins</v>
+<v>CAN_test\can_master_test\can_master_test.cydwr\Analog</v>
+<v>CAN_test\can_master_test\can_master_test.cydwr\Clocks</v>
+<v>CAN_test\can_master_test\can_master_test.cydwr\Interrupts</v>
+<v>CAN_test\can_master_test\can_master_test.cydwr\DMA</v>
+<v>CAN_test\can_master_test\can_master_test.cydwr\System</v>
+<v>CAN_test\can_master_test\can_master_test.cydwr\Directives</v>
+<v>CAN_test\can_master_test\can_master_test.cydwr\Flash Security</v>
+<v>CAN_test\can_master_test\can_master_test.cydwr\EEPROM</v>
+<v>CAN_test\can_master_test\Header Files</v>
+<v>CAN_test\can_master_test\Header Files\cyapicallbacks.h</v>
+<v>CAN_test\can_master_test\Source Files</v>
+<v>CAN_test\can_master_test\Source Files\main.c</v>
+<v>CAN_test\can_master_test\Generated_Source</v>
+<v>CAN_test\can_master_test\Generated_Source\PSoC5</v>
+<v>CAN_test\can_master_test\Generated_Source\PSoC5\CAN_1</v>
+</ExpandedNodeIds>
+<VisibleNodeIds />
+</CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237>
+<CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237 type_name="CyDesigner.Common.Base.Controls.CyTreeViewState" version="1" SelectedNodeId="">
+<ExpandedNodeIds>
+<v>CAN_test</v>
+<v>CAN_test\CAN_Full_Example01</v>
+<v>CAN_test\CAN_Full_Example01\TopDesign</v>
+<v>CAN_test\CAN_Full_Example01\TopDesign\TopDesign.cysch</v>
+<v>CAN_test\can_master</v>
+<v>CAN_test\can_master\TopDesign</v>
+<v>CAN_test\can_master\TopDesign\TopDesign.cysch</v>
+<v>CAN_test\can_master_test</v>
+<v>CAN_test\can_master_test\TopDesign</v>
+<v>CAN_test\can_master_test\TopDesign\TopDesign.cysch</v>
+</ExpandedNodeIds>
+<VisibleNodeIds />
+</CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237>
+<CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237 type_name="CyDesigner.Common.Base.Controls.CyTreeViewState" version="1" SelectedNodeId="">
+<ExpandedNodeIds>
+<v>CAN_test</v>
+<v>CAN_test\CAN_Full_Example01</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files\CAN.lst</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files\CAN_INT.lst</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files\CAN_PM.lst</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files\CAN_TX_RX_func.lst</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files\Cm3Start.lst</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files\cy_em_eeprom.lst</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files\CyBootAsmGnu.lst</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files\CyDmac.lst</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files\cyfitter_cfg.lst</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files\CyFlash.lst</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files\CyLib.lst</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files\cymetadata.lst</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files\cyPm.lst</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files\CySpc.lst</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files\cyutils.lst</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files\LCD.lst</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files\LCD_LCDPort.lst</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files\LCD_PM.lst</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files\main.lst</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files\RX.lst</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files\TX.lst</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\Listing Files\TX_EN.lst</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\CAN_Full_Example01.elf</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\CAN_Full_Example01.hex</v>
+<v>CAN_test\CAN_Full_Example01\CortexM3\ARM_GCC_541\Debug\CAN_Full_Example01.map</v>
+<v>CAN_test\CAN_Full_Example01\CAN_Full_Example01.gpdsc</v>
+<v>CAN_test\CAN_Full_Example01\CAN_Full_Example01.rpt</v>
+<v>CAN_test\CAN_Full_Example01\CAN_Full_Example01_timing.html</v>
+<v>CAN_test\can_master</v>
+<v>CAN_test\can_master\CortexM3</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\CAN_1.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\CAN_1_INT.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\CAN_1_PM.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\CAN_1_TX_RX_func.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\Cm3Start.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\cy_em_eeprom.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\CyBootAsmGnu.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\CyDmac.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\cyfitter_cfg.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\CyFlash.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\CyLib.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\cymetadata.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\cyPm.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\CySpc.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\cyutils.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\LED.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\main.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\RX_1.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\SW.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\TX_1.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\UART_1.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\UART_1_BOOT.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\UART_1_INT.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\UART_1_IntClock.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\Listing Files\UART_1_PM.lst</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\can_master.elf</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\can_master.hex</v>
+<v>CAN_test\can_master\CortexM3\ARM_GCC_541\Debug\can_master.map</v>
+<v>CAN_test\can_master\can_master.gpdsc</v>
+<v>CAN_test\can_master\can_master.rpt</v>
+<v>CAN_test\can_master\can_master_timing.html</v>
+<v>CAN_test\can_master_test</v>
+<v>CAN_test\can_master_test\CortexM3</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\CAN_1.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\CAN_1_INT.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\CAN_1_PM.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\CAN_1_TX_RX_func.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\Cm3Start.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\cy_em_eeprom.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\CyBootAsmGnu.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\CyDmac.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\cyfitter_cfg.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\CyFlash.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\CyLib.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\cymetadata.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\cyPm.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\CySpc.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\cyutils.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\LED.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\main.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\RX_1.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\SW.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\TX_1.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\UART_1.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\UART_1_BOOT.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\UART_1_INT.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\UART_1_IntClock.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\Listing Files\UART_1_PM.lst</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\can_master_test.elf</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\can_master_test.hex</v>
+<v>CAN_test\can_master_test\CortexM3\ARM_GCC_541\Debug\can_master_test.map</v>
+<v>CAN_test\can_master_test\can_master_test.gpdsc</v>
+<v>CAN_test\can_master_test\can_master_test.rpt</v>
+<v>CAN_test\can_master_test\can_master_test_timing.html</v>
+</ExpandedNodeIds>
+<VisibleNodeIds />
+</CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237>
+</TreeStates>
+<TreeKeysV2>
+<v>Datasheet</v>
+</TreeKeysV2>
+<TreeStatesV2>
+<CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237 type_name="CyDesigner.Common.Base.Controls.CyTreeViewState" version="1" SelectedNodeId="">
+<ExpandedNodeIds>
+<v>CAN_test</v>
+<v>CAN_test\CAN_Full_Example01</v>
+<v>CAN_test\CAN_Full_Example01\PSoC 5LP Architecture TRM</v>
+<v>CAN_test\CAN_Full_Example01\CY8C58LP Family Datasheet</v>
+<v>CAN_test\CAN_Full_Example01\System Reference Guides</v>
+<v>CAN_test\CAN_Full_Example01\System Reference Guides\cy_boot_v5_60</v>
+<v>CAN_test\CAN_Full_Example01\CAN_v3_0.pdf</v>
+<v>CAN_test\CAN_Full_Example01\CharLCD_v2_20.pdf</v>
+<v>CAN_test\CAN_Full_Example01\cy_pins_v2_20</v>
+<v>CAN_test\CAN_Full_Example01\cy_pins_v2_20\cy_pins_v2_20.pdf</v>
+<v>CAN_test\can_master</v>
+<v>CAN_test\can_master\PSoC 5LP Architecture TRM</v>
+<v>CAN_test\can_master\CY8C58LP Family Datasheet</v>
+<v>CAN_test\can_master\System Reference Guides</v>
+<v>CAN_test\can_master\System Reference Guides\cy_boot_v5_70</v>
+<v>CAN_test\can_master\CAN_v3_0.pdf</v>
+<v>CAN_test\can_master\cy_constant_v1_0.pdf</v>
+<v>CAN_test\can_master\cy_pins_v2_20</v>
+<v>CAN_test\can_master\cy_pins_v2_20\cy_pins_v2_20.pdf</v>
+<v>CAN_test\can_master\UART_v2_50.pdf</v>
+<v>CAN_test\can_master_test</v>
+<v>CAN_test\can_master_test\PSoC 5LP Architecture TRM</v>
+<v>CAN_test\can_master_test\CY8C58LP Family Datasheet</v>
+<v>CAN_test\can_master_test\System Reference Guides</v>
+<v>CAN_test\can_master_test\System Reference Guides\cy_boot_v5_70</v>
+<v>CAN_test\can_master_test\CAN_v3_0.pdf</v>
+<v>CAN_test\can_master_test\cy_constant_v1_0.pdf</v>
+<v>CAN_test\can_master_test\cy_pins_v2_20</v>
+<v>CAN_test\can_master_test\cy_pins_v2_20\cy_pins_v2_20.pdf</v>
+<v>CAN_test\can_master_test\UART_v2_50.pdf</v>
+</ExpandedNodeIds>
+<VisibleNodeIds />
+</CyGuid_2a325b3b-c96a-4e9f-b7a0-2c44ecb5f237>
+</TreeStatesV2>
+</CyGuid_1b906a0f-a7b6-4e4d-a428-82f98b53cb35>
+</dataGuid>
+<dataGuid v="5f2be1a5-0687-4501-bb8c-cf21cb8211bf">
+<CyGuid_5f2be1a5-0687-4501-bb8c-cf21cb8211bf type_name="CyDesigner.Common.ProjMgmt.GUI.CyBookmarkData" version="1">
+<indicators />
+</CyGuid_5f2be1a5-0687-4501-bb8c-cf21cb8211bf>
+</dataGuid>
+</userData>
+</CyGuid_fdba8dfd-b15b-4469-9bbb-9e40c3e70997>
+<Unloaded />
+<OpenDocs>
+<name v=".\can_master.cydsn\Generated_Source\PSoC5\CAN_1_TX_RX_func.c" />
+<name v=".\can_master_test.cydsn\TopDesign\TopDesign.cysch" />
+<name v=".\can_master_test.cydsn\main.c" />
+<name v=".\can_master_test.cydsn\can_master_test.cydwr" />
+<name v=".\can_master_test.cydsn\Generated_Source\PSoC5\CAN_1_TX_RX_func.c" />
+</OpenDocs>
+<OpenDocsLayout><![CDATA[<?xml version="1.0"?><!--
+
+  Actipro Docking/MDI for WinForms
+  Copyright (c) 2001-2016 Actipro Software LLC.  All rights reserved.
+  http://www.actiprosoftware.com
+
+--><DocumentLayout Version="1.0"><LayoutData><TabbedMdiRootContainer Orientation="Horizontal"><TabbedMdiContainer Size="1575, 831" SelectedTabbedMdiWindow="1c611eb1-bb2a-4416-9a6d-4d57b1f103c2"><ToolWindow Key="Start Page:bd4649ab-da6b-4d04-a663-c722b8bf99db:Start Page" Guid="c424274e-4248-4220-981d-30a224fede3e" /><DocumentWindow Key="C:\Users\KUT-PC\Documents\PSoC Creator\CAN_test\can_master.cydsn\Generated_Source\PSoC5\CAN_1_TX_RX_func.c" Guid="7a99d4b3-dc10-4af8-9592-3a58955c968c" /><DocumentWindow Key="C:\Users\KUT-PC\Documents\PSoC Creator\CAN_test\can_master_test.cydsn\TopDesign\TopDesign.cysch" Guid="1037209c-dde8-4fc7-b6a8-b53771383ad1" /><DocumentWindow Key="C:\Users\KUT-PC\Documents\PSoC Creator\CAN_test\can_master_test.cydsn\main.c" Guid="1c611eb1-bb2a-4416-9a6d-4d57b1f103c2" /><DocumentWindow Key="C:\Users\KUT-PC\Documents\PSoC Creator\CAN_test\can_master_test.cydsn\can_master_test.cydwr" Guid="f8fc17b3-4d63-408d-a8c3-2ce40ea0968e" /><DocumentWindow Key="C:\Users\KUT-PC\Documents\PSoC Creator\CAN_test\can_master_test.cydsn\Generated_Source\PSoC5\CAN_1_TX_RX_func.c" Guid="9c9a035a-4fce-4174-8fe6-9b12c99971a9" /></TabbedMdiContainer></TabbedMdiRootContainer><FloatingContainers /></LayoutData></DocumentLayout>]]></OpenDocsLayout>
+<config v="" />
+<AutoUpdate v="true" />
+</CyGuid_843a90a4-0c4b-4e44-991d-05e7fb117a21>
+</CyXmlSerializer>

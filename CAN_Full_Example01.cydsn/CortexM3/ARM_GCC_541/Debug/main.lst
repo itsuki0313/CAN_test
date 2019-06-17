@@ -1,0 +1,1885 @@
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 1
+
+
+   1              		.syntax unified
+   2              		.cpu cortex-m3
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.thumb
+  14              		.syntax unified
+  15              		.file	"main.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.ISR_CAN,"ax",%progbits
+  20              		.align	2
+  21              		.global	ISR_CAN
+  22              		.thumb
+  23              		.thumb_func
+  24              		.type	ISR_CAN, %function
+  25              	ISR_CAN:
+  26              	.LFB65:
+  27              		.file 1 "main.c"
+   1:main.c        **** /*******************************************************************************
+   2:main.c        **** * File Name: main.c
+   3:main.c        **** *
+   4:main.c        **** * Version: 1.0
+   5:main.c        **** *
+   6:main.c        **** * Description:
+   7:main.c        **** *  This example project demonstrates how to configure the CAN Component in
+   8:main.c        **** *  the Full CAN mode.
+   9:main.c        **** *  The CAN component is configured to receive the following messages from the
+  10:main.c        **** *  remote node:
+  11:main.c        **** *   Message 1 - Status of Switch 1.
+  12:main.c        **** *   Message 2 - ADC data.
+  13:main.c        **** *
+  14:main.c        **** *  The component is also configured to transmit data to control the pulse width
+  15:main.c        **** *  of the PWM in the remote node. The transmitted data (pulse width value)
+  16:main.c        **** *  increments at a switch press.
+  17:main.c        **** *  Both transmitted and received data are displayed on a 2x16 LCD.
+  18:main.c        **** *
+  19:main.c        **** *  This is only one part of the CAN example project. Use this along with
+  20:main.c        **** *  CAN_Basic_Example for complete demonstration.
+  21:main.c        **** *
+  22:main.c        **** * Hardware Dependency:
+  23:main.c        **** *  CY8CKIT-001
+  24:main.c        **** *  CY8CKIT-017
+  25:main.c        **** *
+  26:main.c        **** ********************************************************************************
+  27:main.c        **** * Copyright 2015, Cypress Semiconductor Corporation. All rights reserved.
+  28:main.c        **** * This software is owned by Cypress Semiconductor Corporation and is protected
+  29:main.c        **** * by and subject to worldwide patent and copyright laws and treaties.
+  30:main.c        **** * Therefore, you may use this software only as provided in the license agreement
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 2
+
+
+  31:main.c        **** * accompanying the software package from which you obtained this software.
+  32:main.c        **** * CYPRESS AND ITS SUPPLIERS MAKE NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+  33:main.c        **** * WITH REGARD TO THIS SOFTWARE, INCLUDING, BUT NOT LIMITED TO, NONINFRINGEMENT,
+  34:main.c        **** * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+  35:main.c        **** *******************************************************************************/
+  36:main.c        **** #include <project.h>
+  37:main.c        **** #include <stdio.h>
+  38:main.c        **** 
+  39:main.c        **** #define PWM_PULSE_WIDTH_STEP        (10u)
+  40:main.c        **** #define SWITCH_PRESSED              (0u)
+  41:main.c        **** #define PWM_MESSAGE_ID              (0x1AAu)
+  42:main.c        **** #define PWM_MESSAGE_IDE             (0u)    /* Standard message */
+  43:main.c        **** #define PWM_MESSAGE_IRQ             (0u)    /* No transmit IRQ */
+  44:main.c        **** #define PWM_MESSAGE_RTR             (0u)    /* No RTR */
+  45:main.c        **** #define CAN_RX_MAILBOX_0_SHIFT      (1u)
+  46:main.c        **** #define CAN_RX_MAILBOX_1_SHIFT      (2u)
+  47:main.c        **** #define DATA_SIZE                   (6u)
+  48:main.c        **** #define ONE_BYTE_OFFSET             (8u)
+  49:main.c        **** 
+  50:main.c        **** /* Function prototypes */
+  51:main.c        **** CY_ISR_PROTO(ISR_CAN);
+  52:main.c        **** 
+  53:main.c        **** /* Global variables used to store configuration and data for BASIC CAN mailbox */
+  54:main.c        **** CAN_DATA_BYTES_MSG dataPWM;
+  55:main.c        **** CAN_TX_MSG messagePWM;
+  56:main.c        **** 
+  57:main.c        **** /* Global variable used to store PWM pulse width value */
+  58:main.c        **** uint8 pulseWidthValue = 0u;
+  59:main.c        **** 
+  60:main.c        **** /* Global variable used to store receive message mailbox number */
+  61:main.c        **** volatile uint8 receiveMailboxNumber = 0xFFu;
+  62:main.c        **** 
+  63:main.c        **** 
+  64:main.c        **** /*******************************************************************************
+  65:main.c        **** * Function Name: main
+  66:main.c        **** ********************************************************************************
+  67:main.c        **** *
+  68:main.c        **** * Summary:
+  69:main.c        **** *  main() performs the following functions:
+  70:main.c        **** *  1: Initializes a structure for the Basic CAN mailbox to send messages.
+  71:main.c        **** *  2: Starts the CAN and LCD components.
+  72:main.c        **** *  3: When received Message 1, sends the PWM pulse width and displays
+  73:main.c        **** *     received switch status and value of PWM pulse width on an LCD; 
+  74:main.c        **** *     When received Message 2, display received ADC data on an LCD.
+  75:main.c        **** *
+  76:main.c        **** * Parameters:
+  77:main.c        **** *  None.
+  78:main.c        **** *
+  79:main.c        **** * Return:
+  80:main.c        **** *  None.
+  81:main.c        **** *
+  82:main.c        **** *******************************************************************************/
+  83:main.c        **** int main()
+  84:main.c        **** {
+  85:main.c        ****     char8 txData[DATA_SIZE];    //6u
+  86:main.c        ****     uint16 adcData;
+  87:main.c        ****     
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 3
+
+
+  88:main.c        ****     /* BASIC CAN mailbox configuration */
+  89:main.c        ****     messagePWM.dlc = CAN_TX_DLC_MAX_VALUE;
+  90:main.c        ****     messagePWM.id  = PWM_MESSAGE_ID;
+  91:main.c        ****     messagePWM.ide = PWM_MESSAGE_IDE;
+  92:main.c        ****     messagePWM.irq = PWM_MESSAGE_IRQ;
+  93:main.c        ****     messagePWM.msg = &dataPWM;
+  94:main.c        ****     messagePWM.rtr = PWM_MESSAGE_RTR;
+  95:main.c        **** 
+  96:main.c        ****     LCD_Start();
+  97:main.c        ****     
+  98:main.c        ****     /* Display value of ADC output on LCD */
+  99:main.c        ****     LCD_Position(0u, 0u);
+ 100:main.c        ****     LCD_PrintString("ADC");
+ 101:main.c        **** 
+ 102:main.c        ****     /* Display state of switch on LCD */
+ 103:main.c        ****     LCD_Position(1u, 0u);
+ 104:main.c        ****     LCD_PrintString("SW");
+ 105:main.c        **** 
+ 106:main.c        ****     /* Display state of PWM pulse width on LCD */
+ 107:main.c        ****     LCD_Position(0u, 10u);
+ 108:main.c        ****     LCD_PrintString("PWM");
+ 109:main.c        **** 
+ 110:main.c        ****     CAN_Start();
+ 111:main.c        **** 
+ 112:main.c        ****     /* Set CAN interrupt handler to local routine */
+ 113:main.c        ****     CyIntSetVector(CAN_ISR_NUMBER, ISR_CAN);    
+ 114:main.c        **** 
+ 115:main.c        ****     CyGlobalIntEnable;
+ 116:main.c        **** 
+ 117:main.c        ****     for(;;)
+ 118:main.c        ****     {
+ 119:main.c        ****         if (receiveMailboxNumber == CAN_RX_MAILBOX_switchStatus)
+ 120:main.c        ****         {
+ 121:main.c        ****             LCD_Position(1u, 3u);
+ 122:main.c        ****             if (CAN_RX_DATA_BYTE1(CAN_RX_MAILBOX_switchStatus) == SWITCH_PRESSED)
+ 123:main.c        ****             {
+ 124:main.c        ****                 /* Display received switch status on LCD */
+ 125:main.c        ****                 LCD_PrintString("pressed ");
+ 126:main.c        **** 
+ 127:main.c        ****                 /* Increase the PWM pulse width */
+ 128:main.c        ****                 pulseWidthValue += PWM_PULSE_WIDTH_STEP;
+ 129:main.c        **** 
+ 130:main.c        ****                 /* Send message with the new PWM pulse width */
+ 131:main.c        ****                 dataPWM.byte[0u] = pulseWidthValue;
+ 132:main.c        ****                 CAN_SendMsg(&messagePWM);
+ 133:main.c        **** 
+ 134:main.c        ****                 /* Display value of PWM pulse width on LCD */
+ 135:main.c        ****                 LCD_Position(0u, 14u);
+ 136:main.c        ****                 LCD_PrintInt8(pulseWidthValue);
+ 137:main.c        ****             }
+ 138:main.c        ****             else
+ 139:main.c        ****             {
+ 140:main.c        ****                 /* Display received switch status on LCD */
+ 141:main.c        ****                 LCD_PrintString("released");
+ 142:main.c        ****             }
+ 143:main.c        ****             receiveMailboxNumber = 0xFFu;
+ 144:main.c        ****         }
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 4
+
+
+ 145:main.c        ****         
+ 146:main.c        ****         if (receiveMailboxNumber == CAN_RX_MAILBOX_ADCdata)
+ 147:main.c        ****         {
+ 148:main.c        ****             adcData = ((uint16) ((uint16) CAN_RX_DATA_BYTE1(CAN_RX_MAILBOX_ADCdata) << ONE_BYTE_OFF
+ 149:main.c        ****             
+ 150:main.c        ****             /* Display received ADC data on LCD */
+ 151:main.c        ****             sprintf(txData, "%u.%.3u", (adcData / 1000u), (adcData % 1000u));
+ 152:main.c        ****             txData[DATA_SIZE - 1u] = (char8) '\0';
+ 153:main.c        ****             
+ 154:main.c        ****             LCD_Position(0u, 4u);
+ 155:main.c        ****             LCD_PrintString(txData);
+ 156:main.c        ****             receiveMailboxNumber = 0xFFu;
+ 157:main.c        ****         }
+ 158:main.c        ****     }
+ 159:main.c        **** }
+ 160:main.c        **** 
+ 161:main.c        **** 
+ 162:main.c        **** /*******************************************************************************
+ 163:main.c        **** * Function Name: ISR_CAN
+ 164:main.c        **** ********************************************************************************
+ 165:main.c        **** *
+ 166:main.c        **** * Summary:
+ 167:main.c        **** *  This ISR is executed at a Receive Message event and set receiveMailboxNumber
+ 168:main.c        **** *  global variable with receive message mailbox number.
+ 169:main.c        **** *
+ 170:main.c        **** * Parameters:
+ 171:main.c        **** *  None.
+ 172:main.c        **** *
+ 173:main.c        **** * Return:
+ 174:main.c        **** *  None.
+ 175:main.c        **** *
+ 176:main.c        **** *******************************************************************************/
+ 177:main.c        **** CY_ISR(ISR_CAN)
+ 178:main.c        **** {
+  28              		.loc 1 178 0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+ 179:main.c        ****     /* Clear Receive Message flag */
+ 180:main.c        ****     CAN_INT_SR_REG.byte[1u] = CAN_RX_MESSAGE_MASK;
+  33              		.loc 1 180 0
+  34 0000 1022     		movs	r2, #16
+  35 0002 0F4B     		ldr	r3, .L4
+  36 0004 5A70     		strb	r2, [r3, #1]
+ 181:main.c        **** 
+ 182:main.c        ****     /* Switch Status message received */
+ 183:main.c        ****     if ((CY_GET_REG16((reg16 *) &CAN_BUF_SR_REG.byte[0u]) & CAN_RX_MAILBOX_0_SHIFT) != 0u)
+  37              		.loc 1 183 0
+  38 0006 0833     		adds	r3, r3, #8
+  39 0008 1B88     		ldrh	r3, [r3]
+  40 000a 13F0010F 		tst	r3, #1
+  41 000e 07D0     		beq	.L2
+ 184:main.c        ****     {        
+ 185:main.c        ****         receiveMailboxNumber = CAN_RX_MAILBOX_switchStatus;
+  42              		.loc 1 185 0
+  43 0010 0022     		movs	r2, #0
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 5
+
+
+  44 0012 0C4B     		ldr	r3, .L4+4
+  45 0014 1A70     		strb	r2, [r3]
+ 186:main.c        **** 
+ 187:main.c        ****         /* Acknowledges receipt of new message */
+ 188:main.c        ****         CAN_RX_ACK_MESSAGE(CAN_RX_MAILBOX_switchStatus);
+  46              		.loc 1 188 0
+  47 0016 0C4A     		ldr	r2, .L4+8
+  48 0018 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+  49 001a 43F00103 		orr	r3, r3, #1
+  50 001e 1370     		strb	r3, [r2]
+  51              	.L2:
+ 189:main.c        ****     }
+ 190:main.c        **** 
+ 191:main.c        ****     /* ADC data message received */
+ 192:main.c        ****     if ((CY_GET_REG16((reg16 *) &CAN_BUF_SR_REG.byte[0u]) & CAN_RX_MAILBOX_1_SHIFT) != 0u)
+  52              		.loc 1 192 0
+  53 0020 0A4B     		ldr	r3, .L4+12
+  54 0022 1B88     		ldrh	r3, [r3]
+  55 0024 03F00203 		and	r3, r3, #2
+  56 0028 9BB2     		uxth	r3, r3
+  57 002a 3BB1     		cbz	r3, .L1
+ 193:main.c        ****     {
+ 194:main.c        ****         receiveMailboxNumber = CAN_RX_MAILBOX_ADCdata;
+  58              		.loc 1 194 0
+  59 002c 0122     		movs	r2, #1
+  60 002e 054B     		ldr	r3, .L4+4
+  61 0030 1A70     		strb	r2, [r3]
+ 195:main.c        **** 
+ 196:main.c        ****         /* Acknowledges receipt of new message */
+ 197:main.c        ****         CAN_RX_ACK_MESSAGE(CAN_RX_MAILBOX_ADCdata);
+  62              		.loc 1 197 0
+  63 0032 074A     		ldr	r2, .L4+16
+  64 0034 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+  65 0036 43F00103 		orr	r3, r3, #1
+  66 003a 1370     		strb	r3, [r2]
+  67              	.L1:
+  68 003c 7047     		bx	lr
+  69              	.L5:
+  70 003e 00BF     		.align	2
+  71              	.L4:
+  72 0040 00A00040 		.word	1073782784
+  73 0044 00000000 		.word	.LANCHOR0
+  74 0048 A0A00040 		.word	1073782944
+  75 004c 08A00040 		.word	1073782792
+  76 0050 C0A00040 		.word	1073782976
+  77              		.cfi_endproc
+  78              	.LFE65:
+  79              		.size	ISR_CAN, .-ISR_CAN
+  80              		.section	.text.main,"ax",%progbits
+  81              		.align	2
+  82              		.global	main
+  83              		.thumb
+  84              		.thumb_func
+  85              		.type	main, %function
+  86              	main:
+  87              	.LFB64:
+  84:main.c        ****     char8 txData[DATA_SIZE];    //6u
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 6
+
+
+  88              		.loc 1 84 0
+  89              		.cfi_startproc
+  90              		@ args = 0, pretend = 0, frame = 8
+  91              		@ frame_needed = 0, uses_anonymous_args = 0
+  92 0000 10B5     		push	{r4, lr}
+  93              		.cfi_def_cfa_offset 8
+  94              		.cfi_offset 4, -8
+  95              		.cfi_offset 14, -4
+  96 0002 82B0     		sub	sp, sp, #8
+  97              		.cfi_def_cfa_offset 16
+  89:main.c        ****     messagePWM.id  = PWM_MESSAGE_ID;
+  98              		.loc 1 89 0
+  99 0004 3B4B     		ldr	r3, .L13
+ 100 0006 0822     		movs	r2, #8
+ 101 0008 9A71     		strb	r2, [r3, #6]
+  90:main.c        ****     messagePWM.ide = PWM_MESSAGE_IDE;
+ 102              		.loc 1 90 0
+ 103 000a 4FF4D572 		mov	r2, #426
+ 104 000e 1A60     		str	r2, [r3]
+  91:main.c        ****     messagePWM.irq = PWM_MESSAGE_IRQ;
+ 105              		.loc 1 91 0
+ 106 0010 0024     		movs	r4, #0
+ 107 0012 5C71     		strb	r4, [r3, #5]
+  92:main.c        ****     messagePWM.msg = &dataPWM;
+ 108              		.loc 1 92 0
+ 109 0014 DC71     		strb	r4, [r3, #7]
+  93:main.c        ****     messagePWM.rtr = PWM_MESSAGE_RTR;
+ 110              		.loc 1 93 0
+ 111 0016 384A     		ldr	r2, .L13+4
+ 112 0018 9A60     		str	r2, [r3, #8]
+  94:main.c        **** 
+ 113              		.loc 1 94 0
+ 114 001a 1C71     		strb	r4, [r3, #4]
+  96:main.c        ****     
+ 115              		.loc 1 96 0
+ 116 001c FFF7FEFF 		bl	LCD_Start
+ 117              	.LVL0:
+  99:main.c        ****     LCD_PrintString("ADC");
+ 118              		.loc 1 99 0
+ 119 0020 2146     		mov	r1, r4
+ 120 0022 2046     		mov	r0, r4
+ 121 0024 FFF7FEFF 		bl	LCD_Position
+ 122              	.LVL1:
+ 100:main.c        **** 
+ 123              		.loc 1 100 0
+ 124 0028 3448     		ldr	r0, .L13+8
+ 125 002a FFF7FEFF 		bl	LCD_PrintString
+ 126              	.LVL2:
+ 103:main.c        ****     LCD_PrintString("SW");
+ 127              		.loc 1 103 0
+ 128 002e 2146     		mov	r1, r4
+ 129 0030 0120     		movs	r0, #1
+ 130 0032 FFF7FEFF 		bl	LCD_Position
+ 131              	.LVL3:
+ 104:main.c        **** 
+ 132              		.loc 1 104 0
+ 133 0036 3248     		ldr	r0, .L13+12
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 7
+
+
+ 134 0038 FFF7FEFF 		bl	LCD_PrintString
+ 135              	.LVL4:
+ 107:main.c        ****     LCD_PrintString("PWM");
+ 136              		.loc 1 107 0
+ 137 003c 0A21     		movs	r1, #10
+ 138 003e 2046     		mov	r0, r4
+ 139 0040 FFF7FEFF 		bl	LCD_Position
+ 140              	.LVL5:
+ 108:main.c        **** 
+ 141              		.loc 1 108 0
+ 142 0044 2F48     		ldr	r0, .L13+16
+ 143 0046 FFF7FEFF 		bl	LCD_PrintString
+ 144              	.LVL6:
+ 110:main.c        **** 
+ 145              		.loc 1 110 0
+ 146 004a FFF7FEFF 		bl	CAN_Start
+ 147              	.LVL7:
+ 113:main.c        **** 
+ 148              		.loc 1 113 0
+ 149 004e 2E49     		ldr	r1, .L13+20
+ 150 0050 1020     		movs	r0, #16
+ 151 0052 FFF7FEFF 		bl	CyIntSetVector
+ 152              	.LVL8:
+ 115:main.c        **** 
+ 153              		.loc 1 115 0
+ 154              		.syntax unified
+ 155              	@ 115 "main.c" 1
+ 156 0056 62B6     		CPSIE   i
+ 157              	@ 0 "" 2
+ 158              		.thumb
+ 159              		.syntax unified
+ 160              	.L10:
+ 119:main.c        ****         {
+ 161              		.loc 1 119 0
+ 162 0058 2C4B     		ldr	r3, .L13+24
+ 163 005a 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 164 005c 13F0FF0F 		tst	r3, #255
+ 165 0060 23D1     		bne	.L7
+ 121:main.c        ****             if (CAN_RX_DATA_BYTE1(CAN_RX_MAILBOX_switchStatus) == SWITCH_PRESSED)
+ 166              		.loc 1 121 0
+ 167 0062 0321     		movs	r1, #3
+ 168 0064 0120     		movs	r0, #1
+ 169 0066 FFF7FEFF 		bl	LCD_Position
+ 170              	.LVL9:
+ 122:main.c        ****             {
+ 171              		.loc 1 122 0
+ 172 006a 294B     		ldr	r3, .L13+28
+ 173 006c DB7A     		ldrb	r3, [r3, #11]	@ zero_extendqisi2
+ 174 006e 13F0FF0F 		tst	r3, #255
+ 175 0072 14D1     		bne	.L8
+ 125:main.c        **** 
+ 176              		.loc 1 125 0
+ 177 0074 2748     		ldr	r0, .L13+32
+ 178 0076 FFF7FEFF 		bl	LCD_PrintString
+ 179              	.LVL10:
+ 128:main.c        **** 
+ 180              		.loc 1 128 0
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 8
+
+
+ 181 007a 274C     		ldr	r4, .L13+36
+ 182 007c 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+ 183 007e 0A33     		adds	r3, r3, #10
+ 184 0080 DBB2     		uxtb	r3, r3
+ 185 0082 2370     		strb	r3, [r4]
+ 131:main.c        ****                 CAN_SendMsg(&messagePWM);
+ 186              		.loc 1 131 0
+ 187 0084 1C4A     		ldr	r2, .L13+4
+ 188 0086 1370     		strb	r3, [r2]
+ 132:main.c        **** 
+ 189              		.loc 1 132 0
+ 190 0088 1A48     		ldr	r0, .L13
+ 191 008a FFF7FEFF 		bl	CAN_SendMsg
+ 192              	.LVL11:
+ 135:main.c        ****                 LCD_PrintInt8(pulseWidthValue);
+ 193              		.loc 1 135 0
+ 194 008e 0E21     		movs	r1, #14
+ 195 0090 0020     		movs	r0, #0
+ 196 0092 FFF7FEFF 		bl	LCD_Position
+ 197              	.LVL12:
+ 136:main.c        ****             }
+ 198              		.loc 1 136 0
+ 199 0096 2078     		ldrb	r0, [r4]	@ zero_extendqisi2
+ 200 0098 FFF7FEFF 		bl	LCD_PrintInt8
+ 201              	.LVL13:
+ 202 009c 02E0     		b	.L9
+ 203              	.L8:
+ 141:main.c        ****             }
+ 204              		.loc 1 141 0
+ 205 009e 1F48     		ldr	r0, .L13+40
+ 206 00a0 FFF7FEFF 		bl	LCD_PrintString
+ 207              	.LVL14:
+ 208              	.L9:
+ 143:main.c        ****         }
+ 209              		.loc 1 143 0
+ 210 00a4 FF22     		movs	r2, #255
+ 211 00a6 194B     		ldr	r3, .L13+24
+ 212 00a8 1A70     		strb	r2, [r3]
+ 213              	.L7:
+ 146:main.c        ****         {
+ 214              		.loc 1 146 0
+ 215 00aa 184B     		ldr	r3, .L13+24
+ 216 00ac 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 217 00ae DBB2     		uxtb	r3, r3
+ 218 00b0 012B     		cmp	r3, #1
+ 219 00b2 D1D1     		bne	.L10
+ 148:main.c        ****             
+ 220              		.loc 1 148 0
+ 221 00b4 1A4A     		ldr	r2, .L13+44
+ 222 00b6 D17A     		ldrb	r1, [r2, #11]	@ zero_extendqisi2
+ 223 00b8 937A     		ldrb	r3, [r2, #10]	@ zero_extendqisi2
+ 224 00ba 43EA0123 		orr	r3, r3, r1, lsl #8
+ 225              	.LVL15:
+ 151:main.c        ****             txData[DATA_SIZE - 1u] = (char8) '\0';
+ 226              		.loc 1 151 0
+ 227 00be 194A     		ldr	r2, .L13+48
+ 228 00c0 A2FB0312 		umull	r1, r2, r2, r3
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 9
+
+
+ 229 00c4 9209     		lsrs	r2, r2, #6
+ 230 00c6 4FF47A71 		mov	r1, #1000
+ 231 00ca 01FB1233 		mls	r3, r1, r2, r3
+ 232              	.LVL16:
+ 233 00ce 9BB2     		uxth	r3, r3
+ 234 00d0 1549     		ldr	r1, .L13+52
+ 235 00d2 6846     		mov	r0, sp
+ 236 00d4 FFF7FEFF 		bl	sprintf
+ 237              	.LVL17:
+ 152:main.c        ****             
+ 238              		.loc 1 152 0
+ 239 00d8 0020     		movs	r0, #0
+ 240 00da 8DF80500 		strb	r0, [sp, #5]
+ 154:main.c        ****             LCD_PrintString(txData);
+ 241              		.loc 1 154 0
+ 242 00de 0421     		movs	r1, #4
+ 243 00e0 FFF7FEFF 		bl	LCD_Position
+ 244              	.LVL18:
+ 155:main.c        ****             receiveMailboxNumber = 0xFFu;
+ 245              		.loc 1 155 0
+ 246 00e4 6846     		mov	r0, sp
+ 247 00e6 FFF7FEFF 		bl	LCD_PrintString
+ 248              	.LVL19:
+ 156:main.c        ****         }
+ 249              		.loc 1 156 0
+ 250 00ea FF22     		movs	r2, #255
+ 251 00ec 074B     		ldr	r3, .L13+24
+ 252 00ee 1A70     		strb	r2, [r3]
+ 253 00f0 B2E7     		b	.L10
+ 254              	.L14:
+ 255 00f2 00BF     		.align	2
+ 256              	.L13:
+ 257 00f4 00000000 		.word	messagePWM
+ 258 00f8 00000000 		.word	dataPWM
+ 259 00fc 00000000 		.word	.LC0
+ 260 0100 04000000 		.word	.LC1
+ 261 0104 08000000 		.word	.LC2
+ 262 0108 00000000 		.word	ISR_CAN
+ 263 010c 00000000 		.word	.LANCHOR0
+ 264 0110 A0A00040 		.word	1073782944
+ 265 0114 0C000000 		.word	.LC3
+ 266 0118 00000000 		.word	.LANCHOR1
+ 267 011c 18000000 		.word	.LC4
+ 268 0120 C0A00040 		.word	1073782976
+ 269 0124 D34D6210 		.word	274877907
+ 270 0128 24000000 		.word	.LC5
+ 271              		.cfi_endproc
+ 272              	.LFE64:
+ 273              		.size	main, .-main
+ 274              		.global	receiveMailboxNumber
+ 275              		.global	pulseWidthValue
+ 276              		.comm	messagePWM,12,4
+ 277              		.comm	dataPWM,8,4
+ 278              		.data
+ 279              		.set	.LANCHOR0,. + 0
+ 280              		.type	receiveMailboxNumber, %object
+ 281              		.size	receiveMailboxNumber, 1
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 10
+
+
+ 282              	receiveMailboxNumber:
+ 283 0000 FF       		.byte	-1
+ 284              		.section	.rodata.str1.4,"aMS",%progbits,1
+ 285              		.align	2
+ 286              	.LC0:
+ 287 0000 41444300 		.ascii	"ADC\000"
+ 288              	.LC1:
+ 289 0004 535700   		.ascii	"SW\000"
+ 290 0007 00       		.space	1
+ 291              	.LC2:
+ 292 0008 50574D00 		.ascii	"PWM\000"
+ 293              	.LC3:
+ 294 000c 70726573 		.ascii	"pressed \000"
+ 294      73656420 
+ 294      00
+ 295 0015 000000   		.space	3
+ 296              	.LC4:
+ 297 0018 72656C65 		.ascii	"released\000"
+ 297      61736564 
+ 297      00
+ 298 0021 000000   		.space	3
+ 299              	.LC5:
+ 300 0024 25752E25 		.ascii	"%u.%.3u\000"
+ 300      2E337500 
+ 301              		.bss
+ 302              		.set	.LANCHOR1,. + 0
+ 303              		.type	pulseWidthValue, %object
+ 304              		.size	pulseWidthValue, 1
+ 305              	pulseWidthValue:
+ 306 0000 00       		.space	1
+ 307              		.text
+ 308              	.Letext0:
+ 309              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.2\\psoc creator\\import\\gnu\\arm\\5.4.
+ 310              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.2\\psoc creator\\import\\gnu\\arm\\5.4.
+ 311              		.file 4 "Generated_Source\\PSoC5/cytypes.h"
+ 312              		.file 5 "Generated_Source\\PSoC5/CAN.h"
+ 313              		.file 6 "Generated_Source\\PSoC5/core_cm3.h"
+ 314              		.file 7 "Generated_Source\\PSoC5/LCD.h"
+ 315              		.file 8 "Generated_Source\\PSoC5/CyLib.h"
+ 316              		.file 9 "c:\\program files (x86)\\cypress\\psoc creator\\4.2\\psoc creator\\import\\gnu\\arm\\5.4.
+ 317              		.section	.debug_info,"",%progbits
+ 318              	.Ldebug_info0:
+ 319 0000 DE040000 		.4byte	0x4de
+ 320 0004 0400     		.2byte	0x4
+ 321 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 322 000a 04       		.byte	0x4
+ 323 000b 01       		.uleb128 0x1
+ 324 000c E4010000 		.4byte	.LASF50
+ 325 0010 0C       		.byte	0xc
+ 326 0011 98020000 		.4byte	.LASF51
+ 327 0015 00010000 		.4byte	.LASF52
+ 328 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 329 001d 00000000 		.4byte	0
+ 330 0021 00000000 		.4byte	.Ldebug_line0
+ 331 0025 02       		.uleb128 0x2
+ 332 0026 01       		.byte	0x1
+ 333 0027 06       		.byte	0x6
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 11
+
+
+ 334 0028 DC020000 		.4byte	.LASF0
+ 335 002c 02       		.uleb128 0x2
+ 336 002d 01       		.byte	0x1
+ 337 002e 08       		.byte	0x8
+ 338 002f 98000000 		.4byte	.LASF1
+ 339 0033 02       		.uleb128 0x2
+ 340 0034 02       		.byte	0x2
+ 341 0035 05       		.byte	0x5
+ 342 0036 60010000 		.4byte	.LASF2
+ 343 003a 02       		.uleb128 0x2
+ 344 003b 02       		.byte	0x2
+ 345 003c 07       		.byte	0x7
+ 346 003d CD000000 		.4byte	.LASF3
+ 347 0041 03       		.uleb128 0x3
+ 348 0042 36000000 		.4byte	.LASF9
+ 349 0046 02       		.byte	0x2
+ 350 0047 3F       		.byte	0x3f
+ 351 0048 4C000000 		.4byte	0x4c
+ 352 004c 02       		.uleb128 0x2
+ 353 004d 04       		.byte	0x4
+ 354 004e 05       		.byte	0x5
+ 355 004f 47000000 		.4byte	.LASF4
+ 356 0053 02       		.uleb128 0x2
+ 357 0054 04       		.byte	0x4
+ 358 0055 07       		.byte	0x7
+ 359 0056 BB000000 		.4byte	.LASF5
+ 360 005a 02       		.uleb128 0x2
+ 361 005b 08       		.byte	0x8
+ 362 005c 05       		.byte	0x5
+ 363 005d 8A020000 		.4byte	.LASF6
+ 364 0061 02       		.uleb128 0x2
+ 365 0062 08       		.byte	0x8
+ 366 0063 07       		.byte	0x7
+ 367 0064 A4010000 		.4byte	.LASF7
+ 368 0068 04       		.uleb128 0x4
+ 369 0069 04       		.byte	0x4
+ 370 006a 05       		.byte	0x5
+ 371 006b 696E7400 		.ascii	"int\000"
+ 372 006f 02       		.uleb128 0x2
+ 373 0070 04       		.byte	0x4
+ 374 0071 07       		.byte	0x7
+ 375 0072 5B000000 		.4byte	.LASF8
+ 376 0076 03       		.uleb128 0x3
+ 377 0077 72020000 		.4byte	.LASF10
+ 378 007b 03       		.byte	0x3
+ 379 007c 2C       		.byte	0x2c
+ 380 007d 41000000 		.4byte	0x41
+ 381 0081 05       		.uleb128 0x5
+ 382 0082 C0020000 		.4byte	.LASF11
+ 383 0086 04       		.byte	0x4
+ 384 0087 9201     		.2byte	0x192
+ 385 0089 2C000000 		.4byte	0x2c
+ 386 008d 05       		.uleb128 0x5
+ 387 008e 7A010000 		.4byte	.LASF12
+ 388 0092 04       		.byte	0x4
+ 389 0093 9301     		.2byte	0x193
+ 390 0095 3A000000 		.4byte	0x3a
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 12
+
+
+ 391 0099 05       		.uleb128 0x5
+ 392 009a 81010000 		.4byte	.LASF13
+ 393 009e 04       		.byte	0x4
+ 394 009f 9401     		.2byte	0x194
+ 395 00a1 53000000 		.4byte	0x53
+ 396 00a5 02       		.uleb128 0x2
+ 397 00a6 04       		.byte	0x4
+ 398 00a7 04       		.byte	0x4
+ 399 00a8 7B000000 		.4byte	.LASF14
+ 400 00ac 02       		.uleb128 0x2
+ 401 00ad 08       		.byte	0x8
+ 402 00ae 04       		.byte	0x4
+ 403 00af 49010000 		.4byte	.LASF15
+ 404 00b3 05       		.uleb128 0x5
+ 405 00b4 2A000000 		.4byte	.LASF16
+ 406 00b8 04       		.byte	0x4
+ 407 00b9 A301     		.2byte	0x1a3
+ 408 00bb BF000000 		.4byte	0xbf
+ 409 00bf 02       		.uleb128 0x2
+ 410 00c0 01       		.byte	0x1
+ 411 00c1 08       		.byte	0x8
+ 412 00c2 9F020000 		.4byte	.LASF17
+ 413 00c6 05       		.uleb128 0x5
+ 414 00c7 AB000000 		.4byte	.LASF18
+ 415 00cb 04       		.byte	0x4
+ 416 00cc 3C02     		.2byte	0x23c
+ 417 00ce D2000000 		.4byte	0xd2
+ 418 00d2 06       		.uleb128 0x6
+ 419 00d3 81000000 		.4byte	0x81
+ 420 00d7 05       		.uleb128 0x5
+ 421 00d8 00000000 		.4byte	.LASF19
+ 422 00dc 04       		.byte	0x4
+ 423 00dd 3D02     		.2byte	0x23d
+ 424 00df E3000000 		.4byte	0xe3
+ 425 00e3 06       		.uleb128 0x6
+ 426 00e4 8D000000 		.4byte	0x8d
+ 427 00e8 02       		.uleb128 0x2
+ 428 00e9 08       		.byte	0x8
+ 429 00ea 04       		.byte	0x4
+ 430 00eb D0020000 		.4byte	.LASF20
+ 431 00ef 02       		.uleb128 0x2
+ 432 00f0 04       		.byte	0x4
+ 433 00f1 07       		.byte	0x7
+ 434 00f2 7A020000 		.4byte	.LASF21
+ 435 00f6 07       		.uleb128 0x7
+ 436 00f7 08       		.byte	0x8
+ 437 00f8 05       		.byte	0x5
+ 438 00f9 6F       		.byte	0x6f
+ 439 00fa 0B010000 		.4byte	0x10b
+ 440 00fe 08       		.uleb128 0x8
+ 441 00ff 68000000 		.4byte	.LASF23
+ 442 0103 05       		.byte	0x5
+ 443 0104 71       		.byte	0x71
+ 444 0105 0B010000 		.4byte	0x10b
+ 445 0109 00       		.byte	0
+ 446 010a 00       		.byte	0
+ 447 010b 09       		.uleb128 0x9
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 13
+
+
+ 448 010c 81000000 		.4byte	0x81
+ 449 0110 1B010000 		.4byte	0x11b
+ 450 0114 0A       		.uleb128 0xa
+ 451 0115 EF000000 		.4byte	0xef
+ 452 0119 07       		.byte	0x7
+ 453 011a 00       		.byte	0
+ 454 011b 03       		.uleb128 0x3
+ 455 011c E0000000 		.4byte	.LASF22
+ 456 0120 05       		.byte	0x5
+ 457 0121 72       		.byte	0x72
+ 458 0122 F6000000 		.4byte	0xf6
+ 459 0126 07       		.uleb128 0x7
+ 460 0127 08       		.byte	0x8
+ 461 0128 05       		.byte	0x5
+ 462 0129 75       		.byte	0x75
+ 463 012a 3B010000 		.4byte	0x13b
+ 464 012e 08       		.uleb128 0x8
+ 465 012f 68000000 		.4byte	.LASF23
+ 466 0133 05       		.byte	0x5
+ 467 0134 77       		.byte	0x77
+ 468 0135 4B010000 		.4byte	0x14b
+ 469 0139 00       		.byte	0
+ 470 013a 00       		.byte	0
+ 471 013b 09       		.uleb128 0x9
+ 472 013c C6000000 		.4byte	0xc6
+ 473 0140 4B010000 		.4byte	0x14b
+ 474 0144 0A       		.uleb128 0xa
+ 475 0145 EF000000 		.4byte	0xef
+ 476 0149 07       		.byte	0x7
+ 477 014a 00       		.byte	0
+ 478 014b 06       		.uleb128 0x6
+ 479 014c 3B010000 		.4byte	0x13b
+ 480 0150 03       		.uleb128 0x3
+ 481 0151 1B000000 		.4byte	.LASF24
+ 482 0155 05       		.byte	0x5
+ 483 0156 78       		.byte	0x78
+ 484 0157 26010000 		.4byte	0x126
+ 485 015b 07       		.uleb128 0x7
+ 486 015c 04       		.byte	0x4
+ 487 015d 05       		.byte	0x5
+ 488 015e 7B       		.byte	0x7b
+ 489 015f 70010000 		.4byte	0x170
+ 490 0163 08       		.uleb128 0x8
+ 491 0164 68000000 		.4byte	.LASF23
+ 492 0168 05       		.byte	0x5
+ 493 0169 7D       		.byte	0x7d
+ 494 016a 80010000 		.4byte	0x180
+ 495 016e 00       		.byte	0
+ 496 016f 00       		.byte	0
+ 497 0170 09       		.uleb128 0x9
+ 498 0171 C6000000 		.4byte	0xc6
+ 499 0175 80010000 		.4byte	0x180
+ 500 0179 0A       		.uleb128 0xa
+ 501 017a EF000000 		.4byte	0xef
+ 502 017e 03       		.byte	0x3
+ 503 017f 00       		.byte	0
+ 504 0180 06       		.uleb128 0x6
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 14
+
+
+ 505 0181 70010000 		.4byte	0x170
+ 506 0185 03       		.uleb128 0x3
+ 507 0186 50000000 		.4byte	.LASF25
+ 508 018a 05       		.byte	0x5
+ 509 018b 7E       		.byte	0x7e
+ 510 018c 5B010000 		.4byte	0x15b
+ 511 0190 07       		.uleb128 0x7
+ 512 0191 0C       		.byte	0xc
+ 513 0192 05       		.byte	0x5
+ 514 0193 81       		.byte	0x81
+ 515 0194 E0010000 		.4byte	0x1e0
+ 516 0198 0B       		.uleb128 0xb
+ 517 0199 696400   		.ascii	"id\000"
+ 518 019c 05       		.byte	0x5
+ 519 019d 83       		.byte	0x83
+ 520 019e 99000000 		.4byte	0x99
+ 521 01a2 00       		.byte	0
+ 522 01a3 0B       		.uleb128 0xb
+ 523 01a4 72747200 		.ascii	"rtr\000"
+ 524 01a8 05       		.byte	0x5
+ 525 01a9 84       		.byte	0x84
+ 526 01aa 81000000 		.4byte	0x81
+ 527 01ae 04       		.byte	0x4
+ 528 01af 0B       		.uleb128 0xb
+ 529 01b0 69646500 		.ascii	"ide\000"
+ 530 01b4 05       		.byte	0x5
+ 531 01b5 85       		.byte	0x85
+ 532 01b6 81000000 		.4byte	0x81
+ 533 01ba 05       		.byte	0x5
+ 534 01bb 0B       		.uleb128 0xb
+ 535 01bc 646C6300 		.ascii	"dlc\000"
+ 536 01c0 05       		.byte	0x5
+ 537 01c1 86       		.byte	0x86
+ 538 01c2 81000000 		.4byte	0x81
+ 539 01c6 06       		.byte	0x6
+ 540 01c7 0B       		.uleb128 0xb
+ 541 01c8 69727100 		.ascii	"irq\000"
+ 542 01cc 05       		.byte	0x5
+ 543 01cd 87       		.byte	0x87
+ 544 01ce 81000000 		.4byte	0x81
+ 545 01d2 07       		.byte	0x7
+ 546 01d3 0B       		.uleb128 0xb
+ 547 01d4 6D736700 		.ascii	"msg\000"
+ 548 01d8 05       		.byte	0x5
+ 549 01d9 8B       		.byte	0x8b
+ 550 01da E0010000 		.4byte	0x1e0
+ 551 01de 08       		.byte	0x8
+ 552 01df 00       		.byte	0
+ 553 01e0 0C       		.uleb128 0xc
+ 554 01e1 04       		.byte	0x4
+ 555 01e2 1B010000 		.4byte	0x11b
+ 556 01e6 03       		.uleb128 0x3
+ 557 01e7 81000000 		.4byte	.LASF26
+ 558 01eb 05       		.byte	0x5
+ 559 01ec 8C       		.byte	0x8c
+ 560 01ed 90010000 		.4byte	0x190
+ 561 01f1 07       		.uleb128 0x7
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 15
+
+
+ 562 01f2 20       		.byte	0x20
+ 563 01f3 05       		.byte	0x5
+ 564 01f4 A0       		.byte	0xa0
+ 565 01f5 4E020000 		.4byte	0x24e
+ 566 01f9 08       		.uleb128 0x8
+ 567 01fa DE010000 		.4byte	.LASF27
+ 568 01fe 05       		.byte	0x5
+ 569 01ff A2       		.byte	0xa2
+ 570 0200 85010000 		.4byte	0x185
+ 571 0204 00       		.byte	0
+ 572 0205 08       		.uleb128 0x8
+ 573 0206 A6000000 		.4byte	.LASF28
+ 574 020a 05       		.byte	0x5
+ 575 020b A3       		.byte	0xa3
+ 576 020c 85010000 		.4byte	0x185
+ 577 0210 04       		.byte	0x4
+ 578 0211 08       		.uleb128 0x8
+ 579 0212 6D000000 		.4byte	.LASF29
+ 580 0216 05       		.byte	0x5
+ 581 0217 A4       		.byte	0xa4
+ 582 0218 50010000 		.4byte	0x150
+ 583 021c 08       		.byte	0x8
+ 584 021d 08       		.uleb128 0x8
+ 585 021e 30000000 		.4byte	.LASF30
+ 586 0222 05       		.byte	0x5
+ 587 0223 A5       		.byte	0xa5
+ 588 0224 85010000 		.4byte	0x185
+ 589 0228 10       		.byte	0x10
+ 590 0229 08       		.uleb128 0x8
+ 591 022a BA020000 		.4byte	.LASF31
+ 592 022e 05       		.byte	0x5
+ 593 022f A6       		.byte	0xa6
+ 594 0230 85010000 		.4byte	0x185
+ 595 0234 14       		.byte	0x14
+ 596 0235 08       		.uleb128 0x8
+ 597 0236 83020000 		.4byte	.LASF32
+ 598 023a 05       		.byte	0x5
+ 599 023b A7       		.byte	0xa7
+ 600 023c 85010000 		.4byte	0x185
+ 601 0240 18       		.byte	0x18
+ 602 0241 08       		.uleb128 0x8
+ 603 0242 74000000 		.4byte	.LASF33
+ 604 0246 05       		.byte	0x5
+ 605 0247 A8       		.byte	0xa8
+ 606 0248 85010000 		.4byte	0x185
+ 607 024c 1C       		.byte	0x1c
+ 608 024d 00       		.byte	0
+ 609 024e 03       		.uleb128 0x3
+ 610 024f D0010000 		.4byte	.LASF34
+ 611 0253 05       		.byte	0x5
+ 612 0254 A9       		.byte	0xa9
+ 613 0255 F1010000 		.4byte	0x1f1
+ 614 0259 0D       		.uleb128 0xd
+ 615 025a BB010000 		.4byte	.LASF53
+ 616 025e 01       		.byte	0x1
+ 617 025f B1       		.byte	0xb1
+ 618 0260 00000000 		.4byte	.LFB65
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 16
+
+
+ 619 0264 54000000 		.4byte	.LFE65-.LFB65
+ 620 0268 01       		.uleb128 0x1
+ 621 0269 9C       		.byte	0x9c
+ 622 026a 0E       		.uleb128 0xe
+ 623 026b 88010000 		.4byte	.LASF54
+ 624 026f 01       		.byte	0x1
+ 625 0270 53       		.byte	0x53
+ 626 0271 68000000 		.4byte	0x68
+ 627 0275 00000000 		.4byte	.LFB64
+ 628 0279 2C010000 		.4byte	.LFE64-.LFB64
+ 629 027d 01       		.uleb128 0x1
+ 630 027e 9C       		.byte	0x9c
+ 631 027f 23040000 		.4byte	0x423
+ 632 0283 0F       		.uleb128 0xf
+ 633 0284 40000000 		.4byte	.LASF35
+ 634 0288 01       		.byte	0x1
+ 635 0289 55       		.byte	0x55
+ 636 028a 23040000 		.4byte	0x423
+ 637 028e 02       		.uleb128 0x2
+ 638 028f 91       		.byte	0x91
+ 639 0290 70       		.sleb128 -16
+ 640 0291 10       		.uleb128 0x10
+ 641 0292 9C010000 		.4byte	.LASF36
+ 642 0296 01       		.byte	0x1
+ 643 0297 56       		.byte	0x56
+ 644 0298 8D000000 		.4byte	0x8d
+ 645 029c 00000000 		.4byte	.LLST0
+ 646 02a0 11       		.uleb128 0x11
+ 647 02a1 20000000 		.4byte	.LVL0
+ 648 02a5 88040000 		.4byte	0x488
+ 649 02a9 12       		.uleb128 0x12
+ 650 02aa 28000000 		.4byte	.LVL1
+ 651 02ae 93040000 		.4byte	0x493
+ 652 02b2 C3020000 		.4byte	0x2c3
+ 653 02b6 13       		.uleb128 0x13
+ 654 02b7 01       		.uleb128 0x1
+ 655 02b8 50       		.byte	0x50
+ 656 02b9 02       		.uleb128 0x2
+ 657 02ba 74       		.byte	0x74
+ 658 02bb 00       		.sleb128 0
+ 659 02bc 13       		.uleb128 0x13
+ 660 02bd 01       		.uleb128 0x1
+ 661 02be 51       		.byte	0x51
+ 662 02bf 02       		.uleb128 0x2
+ 663 02c0 74       		.byte	0x74
+ 664 02c1 00       		.sleb128 0
+ 665 02c2 00       		.byte	0
+ 666 02c3 12       		.uleb128 0x12
+ 667 02c4 2E000000 		.4byte	.LVL2
+ 668 02c8 9E040000 		.4byte	0x49e
+ 669 02cc DA020000 		.4byte	0x2da
+ 670 02d0 13       		.uleb128 0x13
+ 671 02d1 01       		.uleb128 0x1
+ 672 02d2 50       		.byte	0x50
+ 673 02d3 05       		.uleb128 0x5
+ 674 02d4 03       		.byte	0x3
+ 675 02d5 00000000 		.4byte	.LC0
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 17
+
+
+ 676 02d9 00       		.byte	0
+ 677 02da 12       		.uleb128 0x12
+ 678 02db 36000000 		.4byte	.LVL3
+ 679 02df 93040000 		.4byte	0x493
+ 680 02e3 F3020000 		.4byte	0x2f3
+ 681 02e7 13       		.uleb128 0x13
+ 682 02e8 01       		.uleb128 0x1
+ 683 02e9 50       		.byte	0x50
+ 684 02ea 01       		.uleb128 0x1
+ 685 02eb 31       		.byte	0x31
+ 686 02ec 13       		.uleb128 0x13
+ 687 02ed 01       		.uleb128 0x1
+ 688 02ee 51       		.byte	0x51
+ 689 02ef 02       		.uleb128 0x2
+ 690 02f0 74       		.byte	0x74
+ 691 02f1 00       		.sleb128 0
+ 692 02f2 00       		.byte	0
+ 693 02f3 12       		.uleb128 0x12
+ 694 02f4 3C000000 		.4byte	.LVL4
+ 695 02f8 9E040000 		.4byte	0x49e
+ 696 02fc 0A030000 		.4byte	0x30a
+ 697 0300 13       		.uleb128 0x13
+ 698 0301 01       		.uleb128 0x1
+ 699 0302 50       		.byte	0x50
+ 700 0303 05       		.uleb128 0x5
+ 701 0304 03       		.byte	0x3
+ 702 0305 04000000 		.4byte	.LC1
+ 703 0309 00       		.byte	0
+ 704 030a 12       		.uleb128 0x12
+ 705 030b 44000000 		.4byte	.LVL5
+ 706 030f 93040000 		.4byte	0x493
+ 707 0313 23030000 		.4byte	0x323
+ 708 0317 13       		.uleb128 0x13
+ 709 0318 01       		.uleb128 0x1
+ 710 0319 50       		.byte	0x50
+ 711 031a 02       		.uleb128 0x2
+ 712 031b 74       		.byte	0x74
+ 713 031c 00       		.sleb128 0
+ 714 031d 13       		.uleb128 0x13
+ 715 031e 01       		.uleb128 0x1
+ 716 031f 51       		.byte	0x51
+ 717 0320 01       		.uleb128 0x1
+ 718 0321 3A       		.byte	0x3a
+ 719 0322 00       		.byte	0
+ 720 0323 12       		.uleb128 0x12
+ 721 0324 4A000000 		.4byte	.LVL6
+ 722 0328 9E040000 		.4byte	0x49e
+ 723 032c 3A030000 		.4byte	0x33a
+ 724 0330 13       		.uleb128 0x13
+ 725 0331 01       		.uleb128 0x1
+ 726 0332 50       		.byte	0x50
+ 727 0333 05       		.uleb128 0x5
+ 728 0334 03       		.byte	0x3
+ 729 0335 08000000 		.4byte	.LC2
+ 730 0339 00       		.byte	0
+ 731 033a 11       		.uleb128 0x11
+ 732 033b 4E000000 		.4byte	.LVL7
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 18
+
+
+ 733 033f A9040000 		.4byte	0x4a9
+ 734 0343 12       		.uleb128 0x12
+ 735 0344 56000000 		.4byte	.LVL8
+ 736 0348 B4040000 		.4byte	0x4b4
+ 737 034c 5F030000 		.4byte	0x35f
+ 738 0350 13       		.uleb128 0x13
+ 739 0351 01       		.uleb128 0x1
+ 740 0352 50       		.byte	0x50
+ 741 0353 01       		.uleb128 0x1
+ 742 0354 40       		.byte	0x40
+ 743 0355 13       		.uleb128 0x13
+ 744 0356 01       		.uleb128 0x1
+ 745 0357 51       		.byte	0x51
+ 746 0358 05       		.uleb128 0x5
+ 747 0359 03       		.byte	0x3
+ 748 035a 00000000 		.4byte	ISR_CAN
+ 749 035e 00       		.byte	0
+ 750 035f 12       		.uleb128 0x12
+ 751 0360 6A000000 		.4byte	.LVL9
+ 752 0364 93040000 		.4byte	0x493
+ 753 0368 77030000 		.4byte	0x377
+ 754 036c 13       		.uleb128 0x13
+ 755 036d 01       		.uleb128 0x1
+ 756 036e 50       		.byte	0x50
+ 757 036f 01       		.uleb128 0x1
+ 758 0370 31       		.byte	0x31
+ 759 0371 13       		.uleb128 0x13
+ 760 0372 01       		.uleb128 0x1
+ 761 0373 51       		.byte	0x51
+ 762 0374 01       		.uleb128 0x1
+ 763 0375 33       		.byte	0x33
+ 764 0376 00       		.byte	0
+ 765 0377 12       		.uleb128 0x12
+ 766 0378 7A000000 		.4byte	.LVL10
+ 767 037c 9E040000 		.4byte	0x49e
+ 768 0380 8E030000 		.4byte	0x38e
+ 769 0384 13       		.uleb128 0x13
+ 770 0385 01       		.uleb128 0x1
+ 771 0386 50       		.byte	0x50
+ 772 0387 05       		.uleb128 0x5
+ 773 0388 03       		.byte	0x3
+ 774 0389 0C000000 		.4byte	.LC3
+ 775 038d 00       		.byte	0
+ 776 038e 12       		.uleb128 0x12
+ 777 038f 8E000000 		.4byte	.LVL11
+ 778 0393 BF040000 		.4byte	0x4bf
+ 779 0397 A5030000 		.4byte	0x3a5
+ 780 039b 13       		.uleb128 0x13
+ 781 039c 01       		.uleb128 0x1
+ 782 039d 50       		.byte	0x50
+ 783 039e 05       		.uleb128 0x5
+ 784 039f 03       		.byte	0x3
+ 785 03a0 00000000 		.4byte	messagePWM
+ 786 03a4 00       		.byte	0
+ 787 03a5 12       		.uleb128 0x12
+ 788 03a6 96000000 		.4byte	.LVL12
+ 789 03aa 93040000 		.4byte	0x493
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 19
+
+
+ 790 03ae BD030000 		.4byte	0x3bd
+ 791 03b2 13       		.uleb128 0x13
+ 792 03b3 01       		.uleb128 0x1
+ 793 03b4 50       		.byte	0x50
+ 794 03b5 01       		.uleb128 0x1
+ 795 03b6 30       		.byte	0x30
+ 796 03b7 13       		.uleb128 0x13
+ 797 03b8 01       		.uleb128 0x1
+ 798 03b9 51       		.byte	0x51
+ 799 03ba 01       		.uleb128 0x1
+ 800 03bb 3E       		.byte	0x3e
+ 801 03bc 00       		.byte	0
+ 802 03bd 11       		.uleb128 0x11
+ 803 03be 9C000000 		.4byte	.LVL13
+ 804 03c2 CB040000 		.4byte	0x4cb
+ 805 03c6 12       		.uleb128 0x12
+ 806 03c7 A4000000 		.4byte	.LVL14
+ 807 03cb 9E040000 		.4byte	0x49e
+ 808 03cf DD030000 		.4byte	0x3dd
+ 809 03d3 13       		.uleb128 0x13
+ 810 03d4 01       		.uleb128 0x1
+ 811 03d5 50       		.byte	0x50
+ 812 03d6 05       		.uleb128 0x5
+ 813 03d7 03       		.byte	0x3
+ 814 03d8 18000000 		.4byte	.LC4
+ 815 03dc 00       		.byte	0
+ 816 03dd 12       		.uleb128 0x12
+ 817 03de D8000000 		.4byte	.LVL17
+ 818 03e2 D6040000 		.4byte	0x4d6
+ 819 03e6 FA030000 		.4byte	0x3fa
+ 820 03ea 13       		.uleb128 0x13
+ 821 03eb 01       		.uleb128 0x1
+ 822 03ec 50       		.byte	0x50
+ 823 03ed 02       		.uleb128 0x2
+ 824 03ee 7D       		.byte	0x7d
+ 825 03ef 00       		.sleb128 0
+ 826 03f0 13       		.uleb128 0x13
+ 827 03f1 01       		.uleb128 0x1
+ 828 03f2 51       		.byte	0x51
+ 829 03f3 05       		.uleb128 0x5
+ 830 03f4 03       		.byte	0x3
+ 831 03f5 24000000 		.4byte	.LC5
+ 832 03f9 00       		.byte	0
+ 833 03fa 12       		.uleb128 0x12
+ 834 03fb E4000000 		.4byte	.LVL18
+ 835 03ff 93040000 		.4byte	0x493
+ 836 0403 12040000 		.4byte	0x412
+ 837 0407 13       		.uleb128 0x13
+ 838 0408 01       		.uleb128 0x1
+ 839 0409 50       		.byte	0x50
+ 840 040a 01       		.uleb128 0x1
+ 841 040b 30       		.byte	0x30
+ 842 040c 13       		.uleb128 0x13
+ 843 040d 01       		.uleb128 0x1
+ 844 040e 51       		.byte	0x51
+ 845 040f 01       		.uleb128 0x1
+ 846 0410 34       		.byte	0x34
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 20
+
+
+ 847 0411 00       		.byte	0
+ 848 0412 14       		.uleb128 0x14
+ 849 0413 EA000000 		.4byte	.LVL19
+ 850 0417 9E040000 		.4byte	0x49e
+ 851 041b 13       		.uleb128 0x13
+ 852 041c 01       		.uleb128 0x1
+ 853 041d 50       		.byte	0x50
+ 854 041e 02       		.uleb128 0x2
+ 855 041f 7D       		.byte	0x7d
+ 856 0420 00       		.sleb128 0
+ 857 0421 00       		.byte	0
+ 858 0422 00       		.byte	0
+ 859 0423 09       		.uleb128 0x9
+ 860 0424 B3000000 		.4byte	0xb3
+ 861 0428 33040000 		.4byte	0x433
+ 862 042c 0A       		.uleb128 0xa
+ 863 042d EF000000 		.4byte	0xef
+ 864 0431 05       		.byte	0x5
+ 865 0432 00       		.byte	0
+ 866 0433 15       		.uleb128 0x15
+ 867 0434 F3000000 		.4byte	.LASF37
+ 868 0438 06       		.byte	0x6
+ 869 0439 1207     		.2byte	0x712
+ 870 043b 3F040000 		.4byte	0x43f
+ 871 043f 06       		.uleb128 0x6
+ 872 0440 76000000 		.4byte	0x76
+ 873 0444 16       		.uleb128 0x16
+ 874 0445 A4020000 		.4byte	.LASF38
+ 875 0449 01       		.byte	0x1
+ 876 044a 36       		.byte	0x36
+ 877 044b 1B010000 		.4byte	0x11b
+ 878 044f 05       		.uleb128 0x5
+ 879 0450 03       		.byte	0x3
+ 880 0451 00000000 		.4byte	dataPWM
+ 881 0455 16       		.uleb128 0x16
+ 882 0456 B0000000 		.4byte	.LASF39
+ 883 045a 01       		.byte	0x1
+ 884 045b 37       		.byte	0x37
+ 885 045c E6010000 		.4byte	0x1e6
+ 886 0460 05       		.uleb128 0x5
+ 887 0461 03       		.byte	0x3
+ 888 0462 00000000 		.4byte	messagePWM
+ 889 0466 16       		.uleb128 0x16
+ 890 0467 50010000 		.4byte	.LASF40
+ 891 046b 01       		.byte	0x1
+ 892 046c 3A       		.byte	0x3a
+ 893 046d 81000000 		.4byte	0x81
+ 894 0471 05       		.uleb128 0x5
+ 895 0472 03       		.byte	0x3
+ 896 0473 00000000 		.4byte	pulseWidthValue
+ 897 0477 16       		.uleb128 0x16
+ 898 0478 06000000 		.4byte	.LASF41
+ 899 047c 01       		.byte	0x1
+ 900 047d 3D       		.byte	0x3d
+ 901 047e D2000000 		.4byte	0xd2
+ 902 0482 05       		.uleb128 0x5
+ 903 0483 03       		.byte	0x3
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 21
+
+
+ 904 0484 00000000 		.4byte	receiveMailboxNumber
+ 905 0488 17       		.uleb128 0x17
+ 906 0489 C6020000 		.4byte	.LASF42
+ 907 048d C6020000 		.4byte	.LASF42
+ 908 0491 07       		.byte	0x7
+ 909 0492 38       		.byte	0x38
+ 910 0493 17       		.uleb128 0x17
+ 911 0494 C3010000 		.4byte	.LASF43
+ 912 0498 C3010000 		.4byte	.LASF43
+ 913 049c 07       		.byte	0x7
+ 914 049d 3D       		.byte	0x3d
+ 915 049e 17       		.uleb128 0x17
+ 916 049f 6A010000 		.4byte	.LASF44
+ 917 04a3 6A010000 		.4byte	.LASF44
+ 918 04a7 07       		.byte	0x7
+ 919 04a8 3C       		.byte	0x3c
+ 920 04a9 17       		.uleb128 0x17
+ 921 04aa F0020000 		.4byte	.LASF45
+ 922 04ae F0020000 		.4byte	.LASF45
+ 923 04b2 05       		.byte	0x5
+ 924 04b3 C5       		.byte	0xc5
+ 925 04b4 17       		.uleb128 0x17
+ 926 04b5 8D010000 		.4byte	.LASF46
+ 927 04b9 8D010000 		.4byte	.LASF46
+ 928 04bd 08       		.byte	0x8
+ 929 04be 88       		.byte	0x88
+ 930 04bf 18       		.uleb128 0x18
+ 931 04c0 8C000000 		.4byte	.LASF47
+ 932 04c4 8C000000 		.4byte	.LASF47
+ 933 04c8 05       		.byte	0x5
+ 934 04c9 1801     		.2byte	0x118
+ 935 04cb 17       		.uleb128 0x17
+ 936 04cc AC020000 		.4byte	.LASF48
+ 937 04d0 AC020000 		.4byte	.LASF48
+ 938 04d4 07       		.byte	0x7
+ 939 04d5 5D       		.byte	0x5d
+ 940 04d6 17       		.uleb128 0x17
+ 941 04d7 E8020000 		.4byte	.LASF49
+ 942 04db E8020000 		.4byte	.LASF49
+ 943 04df 09       		.byte	0x9
+ 944 04e0 E7       		.byte	0xe7
+ 945 04e1 00       		.byte	0
+ 946              		.section	.debug_abbrev,"",%progbits
+ 947              	.Ldebug_abbrev0:
+ 948 0000 01       		.uleb128 0x1
+ 949 0001 11       		.uleb128 0x11
+ 950 0002 01       		.byte	0x1
+ 951 0003 25       		.uleb128 0x25
+ 952 0004 0E       		.uleb128 0xe
+ 953 0005 13       		.uleb128 0x13
+ 954 0006 0B       		.uleb128 0xb
+ 955 0007 03       		.uleb128 0x3
+ 956 0008 0E       		.uleb128 0xe
+ 957 0009 1B       		.uleb128 0x1b
+ 958 000a 0E       		.uleb128 0xe
+ 959 000b 55       		.uleb128 0x55
+ 960 000c 17       		.uleb128 0x17
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 22
+
+
+ 961 000d 11       		.uleb128 0x11
+ 962 000e 01       		.uleb128 0x1
+ 963 000f 10       		.uleb128 0x10
+ 964 0010 17       		.uleb128 0x17
+ 965 0011 00       		.byte	0
+ 966 0012 00       		.byte	0
+ 967 0013 02       		.uleb128 0x2
+ 968 0014 24       		.uleb128 0x24
+ 969 0015 00       		.byte	0
+ 970 0016 0B       		.uleb128 0xb
+ 971 0017 0B       		.uleb128 0xb
+ 972 0018 3E       		.uleb128 0x3e
+ 973 0019 0B       		.uleb128 0xb
+ 974 001a 03       		.uleb128 0x3
+ 975 001b 0E       		.uleb128 0xe
+ 976 001c 00       		.byte	0
+ 977 001d 00       		.byte	0
+ 978 001e 03       		.uleb128 0x3
+ 979 001f 16       		.uleb128 0x16
+ 980 0020 00       		.byte	0
+ 981 0021 03       		.uleb128 0x3
+ 982 0022 0E       		.uleb128 0xe
+ 983 0023 3A       		.uleb128 0x3a
+ 984 0024 0B       		.uleb128 0xb
+ 985 0025 3B       		.uleb128 0x3b
+ 986 0026 0B       		.uleb128 0xb
+ 987 0027 49       		.uleb128 0x49
+ 988 0028 13       		.uleb128 0x13
+ 989 0029 00       		.byte	0
+ 990 002a 00       		.byte	0
+ 991 002b 04       		.uleb128 0x4
+ 992 002c 24       		.uleb128 0x24
+ 993 002d 00       		.byte	0
+ 994 002e 0B       		.uleb128 0xb
+ 995 002f 0B       		.uleb128 0xb
+ 996 0030 3E       		.uleb128 0x3e
+ 997 0031 0B       		.uleb128 0xb
+ 998 0032 03       		.uleb128 0x3
+ 999 0033 08       		.uleb128 0x8
+ 1000 0034 00       		.byte	0
+ 1001 0035 00       		.byte	0
+ 1002 0036 05       		.uleb128 0x5
+ 1003 0037 16       		.uleb128 0x16
+ 1004 0038 00       		.byte	0
+ 1005 0039 03       		.uleb128 0x3
+ 1006 003a 0E       		.uleb128 0xe
+ 1007 003b 3A       		.uleb128 0x3a
+ 1008 003c 0B       		.uleb128 0xb
+ 1009 003d 3B       		.uleb128 0x3b
+ 1010 003e 05       		.uleb128 0x5
+ 1011 003f 49       		.uleb128 0x49
+ 1012 0040 13       		.uleb128 0x13
+ 1013 0041 00       		.byte	0
+ 1014 0042 00       		.byte	0
+ 1015 0043 06       		.uleb128 0x6
+ 1016 0044 35       		.uleb128 0x35
+ 1017 0045 00       		.byte	0
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 23
+
+
+ 1018 0046 49       		.uleb128 0x49
+ 1019 0047 13       		.uleb128 0x13
+ 1020 0048 00       		.byte	0
+ 1021 0049 00       		.byte	0
+ 1022 004a 07       		.uleb128 0x7
+ 1023 004b 13       		.uleb128 0x13
+ 1024 004c 01       		.byte	0x1
+ 1025 004d 0B       		.uleb128 0xb
+ 1026 004e 0B       		.uleb128 0xb
+ 1027 004f 3A       		.uleb128 0x3a
+ 1028 0050 0B       		.uleb128 0xb
+ 1029 0051 3B       		.uleb128 0x3b
+ 1030 0052 0B       		.uleb128 0xb
+ 1031 0053 01       		.uleb128 0x1
+ 1032 0054 13       		.uleb128 0x13
+ 1033 0055 00       		.byte	0
+ 1034 0056 00       		.byte	0
+ 1035 0057 08       		.uleb128 0x8
+ 1036 0058 0D       		.uleb128 0xd
+ 1037 0059 00       		.byte	0
+ 1038 005a 03       		.uleb128 0x3
+ 1039 005b 0E       		.uleb128 0xe
+ 1040 005c 3A       		.uleb128 0x3a
+ 1041 005d 0B       		.uleb128 0xb
+ 1042 005e 3B       		.uleb128 0x3b
+ 1043 005f 0B       		.uleb128 0xb
+ 1044 0060 49       		.uleb128 0x49
+ 1045 0061 13       		.uleb128 0x13
+ 1046 0062 38       		.uleb128 0x38
+ 1047 0063 0B       		.uleb128 0xb
+ 1048 0064 00       		.byte	0
+ 1049 0065 00       		.byte	0
+ 1050 0066 09       		.uleb128 0x9
+ 1051 0067 01       		.uleb128 0x1
+ 1052 0068 01       		.byte	0x1
+ 1053 0069 49       		.uleb128 0x49
+ 1054 006a 13       		.uleb128 0x13
+ 1055 006b 01       		.uleb128 0x1
+ 1056 006c 13       		.uleb128 0x13
+ 1057 006d 00       		.byte	0
+ 1058 006e 00       		.byte	0
+ 1059 006f 0A       		.uleb128 0xa
+ 1060 0070 21       		.uleb128 0x21
+ 1061 0071 00       		.byte	0
+ 1062 0072 49       		.uleb128 0x49
+ 1063 0073 13       		.uleb128 0x13
+ 1064 0074 2F       		.uleb128 0x2f
+ 1065 0075 0B       		.uleb128 0xb
+ 1066 0076 00       		.byte	0
+ 1067 0077 00       		.byte	0
+ 1068 0078 0B       		.uleb128 0xb
+ 1069 0079 0D       		.uleb128 0xd
+ 1070 007a 00       		.byte	0
+ 1071 007b 03       		.uleb128 0x3
+ 1072 007c 08       		.uleb128 0x8
+ 1073 007d 3A       		.uleb128 0x3a
+ 1074 007e 0B       		.uleb128 0xb
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 24
+
+
+ 1075 007f 3B       		.uleb128 0x3b
+ 1076 0080 0B       		.uleb128 0xb
+ 1077 0081 49       		.uleb128 0x49
+ 1078 0082 13       		.uleb128 0x13
+ 1079 0083 38       		.uleb128 0x38
+ 1080 0084 0B       		.uleb128 0xb
+ 1081 0085 00       		.byte	0
+ 1082 0086 00       		.byte	0
+ 1083 0087 0C       		.uleb128 0xc
+ 1084 0088 0F       		.uleb128 0xf
+ 1085 0089 00       		.byte	0
+ 1086 008a 0B       		.uleb128 0xb
+ 1087 008b 0B       		.uleb128 0xb
+ 1088 008c 49       		.uleb128 0x49
+ 1089 008d 13       		.uleb128 0x13
+ 1090 008e 00       		.byte	0
+ 1091 008f 00       		.byte	0
+ 1092 0090 0D       		.uleb128 0xd
+ 1093 0091 2E       		.uleb128 0x2e
+ 1094 0092 00       		.byte	0
+ 1095 0093 3F       		.uleb128 0x3f
+ 1096 0094 19       		.uleb128 0x19
+ 1097 0095 03       		.uleb128 0x3
+ 1098 0096 0E       		.uleb128 0xe
+ 1099 0097 3A       		.uleb128 0x3a
+ 1100 0098 0B       		.uleb128 0xb
+ 1101 0099 3B       		.uleb128 0x3b
+ 1102 009a 0B       		.uleb128 0xb
+ 1103 009b 27       		.uleb128 0x27
+ 1104 009c 19       		.uleb128 0x19
+ 1105 009d 11       		.uleb128 0x11
+ 1106 009e 01       		.uleb128 0x1
+ 1107 009f 12       		.uleb128 0x12
+ 1108 00a0 06       		.uleb128 0x6
+ 1109 00a1 40       		.uleb128 0x40
+ 1110 00a2 18       		.uleb128 0x18
+ 1111 00a3 9742     		.uleb128 0x2117
+ 1112 00a5 19       		.uleb128 0x19
+ 1113 00a6 00       		.byte	0
+ 1114 00a7 00       		.byte	0
+ 1115 00a8 0E       		.uleb128 0xe
+ 1116 00a9 2E       		.uleb128 0x2e
+ 1117 00aa 01       		.byte	0x1
+ 1118 00ab 3F       		.uleb128 0x3f
+ 1119 00ac 19       		.uleb128 0x19
+ 1120 00ad 03       		.uleb128 0x3
+ 1121 00ae 0E       		.uleb128 0xe
+ 1122 00af 3A       		.uleb128 0x3a
+ 1123 00b0 0B       		.uleb128 0xb
+ 1124 00b1 3B       		.uleb128 0x3b
+ 1125 00b2 0B       		.uleb128 0xb
+ 1126 00b3 49       		.uleb128 0x49
+ 1127 00b4 13       		.uleb128 0x13
+ 1128 00b5 8701     		.uleb128 0x87
+ 1129 00b7 19       		.uleb128 0x19
+ 1130 00b8 11       		.uleb128 0x11
+ 1131 00b9 01       		.uleb128 0x1
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 25
+
+
+ 1132 00ba 12       		.uleb128 0x12
+ 1133 00bb 06       		.uleb128 0x6
+ 1134 00bc 40       		.uleb128 0x40
+ 1135 00bd 18       		.uleb128 0x18
+ 1136 00be 9742     		.uleb128 0x2117
+ 1137 00c0 19       		.uleb128 0x19
+ 1138 00c1 01       		.uleb128 0x1
+ 1139 00c2 13       		.uleb128 0x13
+ 1140 00c3 00       		.byte	0
+ 1141 00c4 00       		.byte	0
+ 1142 00c5 0F       		.uleb128 0xf
+ 1143 00c6 34       		.uleb128 0x34
+ 1144 00c7 00       		.byte	0
+ 1145 00c8 03       		.uleb128 0x3
+ 1146 00c9 0E       		.uleb128 0xe
+ 1147 00ca 3A       		.uleb128 0x3a
+ 1148 00cb 0B       		.uleb128 0xb
+ 1149 00cc 3B       		.uleb128 0x3b
+ 1150 00cd 0B       		.uleb128 0xb
+ 1151 00ce 49       		.uleb128 0x49
+ 1152 00cf 13       		.uleb128 0x13
+ 1153 00d0 02       		.uleb128 0x2
+ 1154 00d1 18       		.uleb128 0x18
+ 1155 00d2 00       		.byte	0
+ 1156 00d3 00       		.byte	0
+ 1157 00d4 10       		.uleb128 0x10
+ 1158 00d5 34       		.uleb128 0x34
+ 1159 00d6 00       		.byte	0
+ 1160 00d7 03       		.uleb128 0x3
+ 1161 00d8 0E       		.uleb128 0xe
+ 1162 00d9 3A       		.uleb128 0x3a
+ 1163 00da 0B       		.uleb128 0xb
+ 1164 00db 3B       		.uleb128 0x3b
+ 1165 00dc 0B       		.uleb128 0xb
+ 1166 00dd 49       		.uleb128 0x49
+ 1167 00de 13       		.uleb128 0x13
+ 1168 00df 02       		.uleb128 0x2
+ 1169 00e0 17       		.uleb128 0x17
+ 1170 00e1 00       		.byte	0
+ 1171 00e2 00       		.byte	0
+ 1172 00e3 11       		.uleb128 0x11
+ 1173 00e4 898201   		.uleb128 0x4109
+ 1174 00e7 00       		.byte	0
+ 1175 00e8 11       		.uleb128 0x11
+ 1176 00e9 01       		.uleb128 0x1
+ 1177 00ea 31       		.uleb128 0x31
+ 1178 00eb 13       		.uleb128 0x13
+ 1179 00ec 00       		.byte	0
+ 1180 00ed 00       		.byte	0
+ 1181 00ee 12       		.uleb128 0x12
+ 1182 00ef 898201   		.uleb128 0x4109
+ 1183 00f2 01       		.byte	0x1
+ 1184 00f3 11       		.uleb128 0x11
+ 1185 00f4 01       		.uleb128 0x1
+ 1186 00f5 31       		.uleb128 0x31
+ 1187 00f6 13       		.uleb128 0x13
+ 1188 00f7 01       		.uleb128 0x1
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 26
+
+
+ 1189 00f8 13       		.uleb128 0x13
+ 1190 00f9 00       		.byte	0
+ 1191 00fa 00       		.byte	0
+ 1192 00fb 13       		.uleb128 0x13
+ 1193 00fc 8A8201   		.uleb128 0x410a
+ 1194 00ff 00       		.byte	0
+ 1195 0100 02       		.uleb128 0x2
+ 1196 0101 18       		.uleb128 0x18
+ 1197 0102 9142     		.uleb128 0x2111
+ 1198 0104 18       		.uleb128 0x18
+ 1199 0105 00       		.byte	0
+ 1200 0106 00       		.byte	0
+ 1201 0107 14       		.uleb128 0x14
+ 1202 0108 898201   		.uleb128 0x4109
+ 1203 010b 01       		.byte	0x1
+ 1204 010c 11       		.uleb128 0x11
+ 1205 010d 01       		.uleb128 0x1
+ 1206 010e 31       		.uleb128 0x31
+ 1207 010f 13       		.uleb128 0x13
+ 1208 0110 00       		.byte	0
+ 1209 0111 00       		.byte	0
+ 1210 0112 15       		.uleb128 0x15
+ 1211 0113 34       		.uleb128 0x34
+ 1212 0114 00       		.byte	0
+ 1213 0115 03       		.uleb128 0x3
+ 1214 0116 0E       		.uleb128 0xe
+ 1215 0117 3A       		.uleb128 0x3a
+ 1216 0118 0B       		.uleb128 0xb
+ 1217 0119 3B       		.uleb128 0x3b
+ 1218 011a 05       		.uleb128 0x5
+ 1219 011b 49       		.uleb128 0x49
+ 1220 011c 13       		.uleb128 0x13
+ 1221 011d 3F       		.uleb128 0x3f
+ 1222 011e 19       		.uleb128 0x19
+ 1223 011f 3C       		.uleb128 0x3c
+ 1224 0120 19       		.uleb128 0x19
+ 1225 0121 00       		.byte	0
+ 1226 0122 00       		.byte	0
+ 1227 0123 16       		.uleb128 0x16
+ 1228 0124 34       		.uleb128 0x34
+ 1229 0125 00       		.byte	0
+ 1230 0126 03       		.uleb128 0x3
+ 1231 0127 0E       		.uleb128 0xe
+ 1232 0128 3A       		.uleb128 0x3a
+ 1233 0129 0B       		.uleb128 0xb
+ 1234 012a 3B       		.uleb128 0x3b
+ 1235 012b 0B       		.uleb128 0xb
+ 1236 012c 49       		.uleb128 0x49
+ 1237 012d 13       		.uleb128 0x13
+ 1238 012e 3F       		.uleb128 0x3f
+ 1239 012f 19       		.uleb128 0x19
+ 1240 0130 02       		.uleb128 0x2
+ 1241 0131 18       		.uleb128 0x18
+ 1242 0132 00       		.byte	0
+ 1243 0133 00       		.byte	0
+ 1244 0134 17       		.uleb128 0x17
+ 1245 0135 2E       		.uleb128 0x2e
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 27
+
+
+ 1246 0136 00       		.byte	0
+ 1247 0137 3F       		.uleb128 0x3f
+ 1248 0138 19       		.uleb128 0x19
+ 1249 0139 3C       		.uleb128 0x3c
+ 1250 013a 19       		.uleb128 0x19
+ 1251 013b 6E       		.uleb128 0x6e
+ 1252 013c 0E       		.uleb128 0xe
+ 1253 013d 03       		.uleb128 0x3
+ 1254 013e 0E       		.uleb128 0xe
+ 1255 013f 3A       		.uleb128 0x3a
+ 1256 0140 0B       		.uleb128 0xb
+ 1257 0141 3B       		.uleb128 0x3b
+ 1258 0142 0B       		.uleb128 0xb
+ 1259 0143 00       		.byte	0
+ 1260 0144 00       		.byte	0
+ 1261 0145 18       		.uleb128 0x18
+ 1262 0146 2E       		.uleb128 0x2e
+ 1263 0147 00       		.byte	0
+ 1264 0148 3F       		.uleb128 0x3f
+ 1265 0149 19       		.uleb128 0x19
+ 1266 014a 3C       		.uleb128 0x3c
+ 1267 014b 19       		.uleb128 0x19
+ 1268 014c 6E       		.uleb128 0x6e
+ 1269 014d 0E       		.uleb128 0xe
+ 1270 014e 03       		.uleb128 0x3
+ 1271 014f 0E       		.uleb128 0xe
+ 1272 0150 3A       		.uleb128 0x3a
+ 1273 0151 0B       		.uleb128 0xb
+ 1274 0152 3B       		.uleb128 0x3b
+ 1275 0153 05       		.uleb128 0x5
+ 1276 0154 00       		.byte	0
+ 1277 0155 00       		.byte	0
+ 1278 0156 00       		.byte	0
+ 1279              		.section	.debug_loc,"",%progbits
+ 1280              	.Ldebug_loc0:
+ 1281              	.LLST0:
+ 1282 0000 BE000000 		.4byte	.LVL15
+ 1283 0004 CE000000 		.4byte	.LVL16
+ 1284 0008 0100     		.2byte	0x1
+ 1285 000a 53       		.byte	0x53
+ 1286 000b 00000000 		.4byte	0
+ 1287 000f 00000000 		.4byte	0
+ 1288              		.section	.debug_aranges,"",%progbits
+ 1289 0000 24000000 		.4byte	0x24
+ 1290 0004 0200     		.2byte	0x2
+ 1291 0006 00000000 		.4byte	.Ldebug_info0
+ 1292 000a 04       		.byte	0x4
+ 1293 000b 00       		.byte	0
+ 1294 000c 0000     		.2byte	0
+ 1295 000e 0000     		.2byte	0
+ 1296 0010 00000000 		.4byte	.LFB65
+ 1297 0014 54000000 		.4byte	.LFE65-.LFB65
+ 1298 0018 00000000 		.4byte	.LFB64
+ 1299 001c 2C010000 		.4byte	.LFE64-.LFB64
+ 1300 0020 00000000 		.4byte	0
+ 1301 0024 00000000 		.4byte	0
+ 1302              		.section	.debug_ranges,"",%progbits
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 28
+
+
+ 1303              	.Ldebug_ranges0:
+ 1304 0000 00000000 		.4byte	.LFB65
+ 1305 0004 54000000 		.4byte	.LFE65
+ 1306 0008 00000000 		.4byte	.LFB64
+ 1307 000c 2C010000 		.4byte	.LFE64
+ 1308 0010 00000000 		.4byte	0
+ 1309 0014 00000000 		.4byte	0
+ 1310              		.section	.debug_line,"",%progbits
+ 1311              	.Ldebug_line0:
+ 1312 0000 2A020000 		.section	.debug_str,"MS",%progbits,1
+ 1312      0200DC01 
+ 1312      00000201 
+ 1312      FB0E0D00 
+ 1312      01010101 
+ 1313              	.LASF19:
+ 1314 0000 72656731 		.ascii	"reg16\000"
+ 1314      3600
+ 1315              	.LASF41:
+ 1316 0006 72656365 		.ascii	"receiveMailboxNumber\000"
+ 1316      6976654D 
+ 1316      61696C62 
+ 1316      6F784E75 
+ 1316      6D626572 
+ 1317              	.LASF24:
+ 1318 001b 43414E5F 		.ascii	"CAN_DATA_BYTES\000"
+ 1318      44415441 
+ 1318      5F425954 
+ 1318      455300
+ 1319              	.LASF16:
+ 1320 002a 63686172 		.ascii	"char8\000"
+ 1320      3800
+ 1321              	.LASF30:
+ 1322 0030 7278616D 		.ascii	"rxamr\000"
+ 1322      7200
+ 1323              	.LASF9:
+ 1324 0036 5F5F696E 		.ascii	"__int32_t\000"
+ 1324      7433325F 
+ 1324      7400
+ 1325              	.LASF35:
+ 1326 0040 74784461 		.ascii	"txData\000"
+ 1326      746100
+ 1327              	.LASF4:
+ 1328 0047 6C6F6E67 		.ascii	"long int\000"
+ 1328      20696E74 
+ 1328      00
+ 1329              	.LASF25:
+ 1330 0050 43414E5F 		.ascii	"CAN_REG_32\000"
+ 1330      5245475F 
+ 1330      333200
+ 1331              	.LASF8:
+ 1332 005b 756E7369 		.ascii	"unsigned int\000"
+ 1332      676E6564 
+ 1332      20696E74 
+ 1332      00
+ 1333              	.LASF23:
+ 1334 0068 62797465 		.ascii	"byte\000"
+ 1334      00
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 29
+
+
+ 1335              	.LASF29:
+ 1336 006d 72786461 		.ascii	"rxdata\000"
+ 1336      746100
+ 1337              	.LASF33:
+ 1338 0074 72786163 		.ascii	"rxacrd\000"
+ 1338      726400
+ 1339              	.LASF14:
+ 1340 007b 666C6F61 		.ascii	"float\000"
+ 1340      7400
+ 1341              	.LASF26:
+ 1342 0081 43414E5F 		.ascii	"CAN_TX_MSG\000"
+ 1342      54585F4D 
+ 1342      534700
+ 1343              	.LASF47:
+ 1344 008c 43414E5F 		.ascii	"CAN_SendMsg\000"
+ 1344      53656E64 
+ 1344      4D736700 
+ 1345              	.LASF1:
+ 1346 0098 756E7369 		.ascii	"unsigned char\000"
+ 1346      676E6564 
+ 1346      20636861 
+ 1346      7200
+ 1347              	.LASF28:
+ 1348 00a6 72786964 		.ascii	"rxid\000"
+ 1348      00
+ 1349              	.LASF18:
+ 1350 00ab 72656738 		.ascii	"reg8\000"
+ 1350      00
+ 1351              	.LASF39:
+ 1352 00b0 6D657373 		.ascii	"messagePWM\000"
+ 1352      61676550 
+ 1352      574D00
+ 1353              	.LASF5:
+ 1354 00bb 6C6F6E67 		.ascii	"long unsigned int\000"
+ 1354      20756E73 
+ 1354      69676E65 
+ 1354      6420696E 
+ 1354      7400
+ 1355              	.LASF3:
+ 1356 00cd 73686F72 		.ascii	"short unsigned int\000"
+ 1356      7420756E 
+ 1356      7369676E 
+ 1356      65642069 
+ 1356      6E7400
+ 1357              	.LASF22:
+ 1358 00e0 43414E5F 		.ascii	"CAN_DATA_BYTES_MSG\000"
+ 1358      44415441 
+ 1358      5F425954 
+ 1358      45535F4D 
+ 1358      534700
+ 1359              	.LASF37:
+ 1360 00f3 49544D5F 		.ascii	"ITM_RxBuffer\000"
+ 1360      52784275 
+ 1360      66666572 
+ 1360      00
+ 1361              	.LASF52:
+ 1362 0100 433A5C55 		.ascii	"C:\\Users\\KUT-PC\\Documents\\PSoC Creator\\CAN_tes"
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 30
+
+
+ 1362      73657273 
+ 1362      5C4B5554 
+ 1362      2D50435C 
+ 1362      446F6375 
+ 1363 012e 745C4341 		.ascii	"t\\CAN_Full_Example01.cydsn\000"
+ 1363      4E5F4675 
+ 1363      6C6C5F45 
+ 1363      78616D70 
+ 1363      6C653031 
+ 1364              	.LASF15:
+ 1365 0149 646F7562 		.ascii	"double\000"
+ 1365      6C6500
+ 1366              	.LASF40:
+ 1367 0150 70756C73 		.ascii	"pulseWidthValue\000"
+ 1367      65576964 
+ 1367      74685661 
+ 1367      6C756500 
+ 1368              	.LASF2:
+ 1369 0160 73686F72 		.ascii	"short int\000"
+ 1369      7420696E 
+ 1369      7400
+ 1370              	.LASF44:
+ 1371 016a 4C43445F 		.ascii	"LCD_PrintString\000"
+ 1371      5072696E 
+ 1371      74537472 
+ 1371      696E6700 
+ 1372              	.LASF12:
+ 1373 017a 75696E74 		.ascii	"uint16\000"
+ 1373      313600
+ 1374              	.LASF13:
+ 1375 0181 75696E74 		.ascii	"uint32\000"
+ 1375      333200
+ 1376              	.LASF54:
+ 1377 0188 6D61696E 		.ascii	"main\000"
+ 1377      00
+ 1378              	.LASF46:
+ 1379 018d 4379496E 		.ascii	"CyIntSetVector\000"
+ 1379      74536574 
+ 1379      56656374 
+ 1379      6F7200
+ 1380              	.LASF36:
+ 1381 019c 61646344 		.ascii	"adcData\000"
+ 1381      61746100 
+ 1382              	.LASF7:
+ 1383 01a4 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 1383      206C6F6E 
+ 1383      6720756E 
+ 1383      7369676E 
+ 1383      65642069 
+ 1384              	.LASF53:
+ 1385 01bb 4953525F 		.ascii	"ISR_CAN\000"
+ 1385      43414E00 
+ 1386              	.LASF43:
+ 1387 01c3 4C43445F 		.ascii	"LCD_Position\000"
+ 1387      506F7369 
+ 1387      74696F6E 
+ 1387      00
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 31
+
+
+ 1388              	.LASF34:
+ 1389 01d0 43414E5F 		.ascii	"CAN_RX_STRUCT\000"
+ 1389      52585F53 
+ 1389      54525543 
+ 1389      5400
+ 1390              	.LASF27:
+ 1391 01de 7278636D 		.ascii	"rxcmd\000"
+ 1391      6400
+ 1392              	.LASF50:
+ 1393 01e4 474E5520 		.ascii	"GNU C11 5.4.1 20160609 (release) [ARM/embedded-5-br"
+ 1393      43313120 
+ 1393      352E342E 
+ 1393      31203230 
+ 1393      31363036 
+ 1394 0217 616E6368 		.ascii	"anch revision 237715] -mcpu=cortex-m3 -mthumb -g -O"
+ 1394      20726576 
+ 1394      6973696F 
+ 1394      6E203233 
+ 1394      37373135 
+ 1395 024a 67202D66 		.ascii	"g -ffunction-sections -ffat-lto-objects\000"
+ 1395      66756E63 
+ 1395      74696F6E 
+ 1395      2D736563 
+ 1395      74696F6E 
+ 1396              	.LASF10:
+ 1397 0272 696E7433 		.ascii	"int32_t\000"
+ 1397      325F7400 
+ 1398              	.LASF21:
+ 1399 027a 73697A65 		.ascii	"sizetype\000"
+ 1399      74797065 
+ 1399      00
+ 1400              	.LASF32:
+ 1401 0283 7278616D 		.ascii	"rxamrd\000"
+ 1401      726400
+ 1402              	.LASF6:
+ 1403 028a 6C6F6E67 		.ascii	"long long int\000"
+ 1403      206C6F6E 
+ 1403      6720696E 
+ 1403      7400
+ 1404              	.LASF51:
+ 1405 0298 6D61696E 		.ascii	"main.c\000"
+ 1405      2E6300
+ 1406              	.LASF17:
+ 1407 029f 63686172 		.ascii	"char\000"
+ 1407      00
+ 1408              	.LASF38:
+ 1409 02a4 64617461 		.ascii	"dataPWM\000"
+ 1409      50574D00 
+ 1410              	.LASF48:
+ 1411 02ac 4C43445F 		.ascii	"LCD_PrintInt8\000"
+ 1411      5072696E 
+ 1411      74496E74 
+ 1411      3800
+ 1412              	.LASF31:
+ 1413 02ba 72786163 		.ascii	"rxacr\000"
+ 1413      7200
+ 1414              	.LASF11:
+ARM GAS  C:\Users\KUT-PC\AppData\Local\Temp\ccHGnZG2.s 			page 32
+
+
+ 1415 02c0 75696E74 		.ascii	"uint8\000"
+ 1415      3800
+ 1416              	.LASF42:
+ 1417 02c6 4C43445F 		.ascii	"LCD_Start\000"
+ 1417      53746172 
+ 1417      7400
+ 1418              	.LASF20:
+ 1419 02d0 6C6F6E67 		.ascii	"long double\000"
+ 1419      20646F75 
+ 1419      626C6500 
+ 1420              	.LASF0:
+ 1421 02dc 7369676E 		.ascii	"signed char\000"
+ 1421      65642063 
+ 1421      68617200 
+ 1422              	.LASF49:
+ 1423 02e8 73707269 		.ascii	"sprintf\000"
+ 1423      6E746600 
+ 1424              	.LASF45:
+ 1425 02f0 43414E5F 		.ascii	"CAN_Start\000"
+ 1425      53746172 
+ 1425      7400
+ 1426              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 5.4.1 20160609 (release) [ARM/embedded-5-bran
